@@ -4,6 +4,7 @@ import cors from "cors";
 import ip from "ip";
 import log from "./config/logger.js";
 import Http from "./utils/http.js";
+import scooterRoutes from "./routes/scooters.routes.js";
 
 dotenv.config();
 
@@ -12,9 +13,15 @@ const app = express();
 
 app.use(cors({origin: '*'}));
 app.use(express.json());
+app.use('/scooters', scooterRoutes);
 
-app.get("/", (request, response) => {
-        response.status(Http.OK.code).send('Scooters API');
+app.get("/", (req, res) => {
+        res.status(Http.OK.code).send('Scooters API');
+    }
+)
+
+app.all("*", (req, res) => {
+        res.status(Http.NOT_FOUND.code).send(Http.NOT_FOUND.status);
     }
 )
 
