@@ -46,6 +46,53 @@ services:
     networks:
       - scooter-rent
 
+  bookings-management:
+    container_name: bookings-management
+    build: ./BookingService
+    image: bookings_management:1.0
+    volumes:
+      - $HOME/bookings-management:/src
+    ports:
+      - 3001:3000
+    expose:
+      - 3001
+    environment:
+      DB_HOST: bookingsdb
+      DB_PORT: 3305
+      DB_USER: 'admin'
+      DB_PASSWORD: 'password'
+      DB_NAME: bookingsdb
+      DB_CONNECTION_LIMIT: 20
+      SERVICE_TAGS: dev
+      SERVICE_NAME: scooters-management
+      SERVER_PORT: 3001
+    depends_on:
+      - bookingsdb
+    networks:
+      - scooter-rent
+
+  bookingsdb:
+    image: mysql:8.0
+    container_name: bookings-db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    volumes:
+      - ./BookingService/dbinit/init.sql:/docker-entrypoint-initdb.d/0_init.sql
+      - $HOME/database3:/var/lib/mysql
+    ports:
+      - 3305:3306
+    expose:
+      - 3305
+    environment:
+      MYSQL_DATABASE: bookingsdb
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+      SERVICE_TAGS: dev
+      SERVICE_NAME: bookingsdb
+    networks:
+      - scooter-rent
+
 networks:
   scooter-rent:
     driver: bridge
