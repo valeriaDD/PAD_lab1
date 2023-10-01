@@ -1,7 +1,32 @@
 services:
-  mysqldb:
+  scooters-management:
+    container_name: scooters-management
+    build: ./ScootersService
+    image: scooters_management:1.0
+    volumes:
+      - $HOME/scooters-management:/src
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+    environment:
+      DB_HOST: scootersdb
+      DB_PORT: 3306
+      DB_USER: 'admin'
+      DB_PASSWORD: 'password'
+      DB_NAME: scootersdb
+      DB_CONNECTION_LIMIT: 20
+      SERVICE_TAGS: dev
+      SERVICE_NAME: scooters-management
+      SERVER_PORT: 3000
+    depends_on:
+      - scootersdb
+    networks:
+      - scooter-rent
+
+  scootersdb:
     image: mysql:8.0
-    container_name: scooters_db
+    container_name: scooters-db
     command: --default-authentication-plugin=mysql_native_password
     restart: unless-stopped
     volumes:
@@ -17,10 +42,10 @@ services:
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: password
       SERVICE_TAGS: dev
-      SERVICE_NAME: mysqldb
+      SERVICE_NAME: scootersdb
     networks:
-      - scooter_rent
+      - scooter-rent
 
 networks:
-  scooter_rent:
+  scooter-rent:
     driver: bridge
