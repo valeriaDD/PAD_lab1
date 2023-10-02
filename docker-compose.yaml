@@ -7,8 +7,10 @@ services:
       - $HOME/scooters-management:/src
     ports:
       - 3000:3000
+      - 30001:30001
     expose:
       - 3000
+      - 30001
     environment:
       DB_HOST: scootersdb
       DB_PORT: 3306
@@ -19,6 +21,8 @@ services:
       SERVICE_TAGS: dev
       SERVICE_NAME: scooters-management
       SERVER_PORT: 3000
+      GRPC_SERVER_PORT: 30001
+      GRPC_SERVER_HOST: scooters-management
     depends_on:
       - scootersdb
     networks:
@@ -53,7 +57,7 @@ services:
     volumes:
       - $HOME/bookings-management:/src
     ports:
-      - 3001:3000
+      - 3001:3001
     expose:
       - 3001
     environment:
@@ -66,8 +70,11 @@ services:
       SERVICE_TAGS: dev
       SERVICE_NAME: scooters-management
       SERVER_PORT: 3001
+      GRPC_SERVER_PORT: 30001
+      GRPC_SERVER_HOST: scooters-management
     depends_on:
       - bookingsdb
+      - scooters-management
     networks:
       - scooter-rent
 

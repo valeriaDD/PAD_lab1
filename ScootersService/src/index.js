@@ -5,8 +5,10 @@ import ip from "ip";
 import log from "./config/logger.js";
 import Http from "./utils/http.js";
 import scooterRoutes from "./routes/scooters.routes.js";
+import grpcServer from "./config/grpcServer.js";
 
 dotenv.config();
+grpcServer;
 
 const PORT = process.env.SERVER_PORT || 3000;
 const app = express();

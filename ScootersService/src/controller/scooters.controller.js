@@ -6,7 +6,7 @@ import Http from "../utils/http.js";
 export const getScooters = (req, res) => {
     log.info(`${req.method} ${req.originalUrl}, get all scooters.`);
 
-    database.query(QUERY.SELECT_SCOOTERS, (error, result) => {
+    database.query(QUERY.SELECT_SCOOTERS, [], (error, result) => {
         if (error) {
             log.error(error.message)
             res.status(Http.INTERNAL_SERVER_ERROR.code).send(Http.INTERNAL_SERVER_ERROR.status);
@@ -50,12 +50,12 @@ export const updateScooter = (req, res) => {
             log.info(`${req.method} ${req.originalUrl}, update scooter.`);
 
             database.query(QUERY.PATCH_SCOOTER(req.body, req.params.id), [], (error, result) => {
-               if (error) {
-                   log.error(error.message);
-                   res.status(Http.INTERNAL_SERVER_ERROR.code).send(error);
-               } else {
-                   res.status(Http.NO_CONTENT.code).send(Http.NO_CONTENT.status);
-               }
+                if (error) {
+                    log.error(error.message);
+                    res.status(Http.INTERNAL_SERVER_ERROR.code).send(error);
+                } else {
+                    res.status(Http.NO_CONTENT.code).send(Http.NO_CONTENT.status);
+                }
             });
 
         } else {

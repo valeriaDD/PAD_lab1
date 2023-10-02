@@ -3,6 +3,10 @@ const QUERY = {
                       FROM scooters
                       ORDER BY created_at DESC`,
 
+    SELECT_SCOOTER_IDS: `SELECT id
+                      FROM scooters
+                      ORDER BY created_at DESC`,
+
     SELECT_SCOOTER: `SELECT *
                      FROM scooters
                      WHERE id = ?`,
