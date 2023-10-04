@@ -4,10 +4,9 @@ import ip from "ip";
 
 const GRPC_SERVER_PORT = process.env.GRPC_SERVER_PORT || 30001;
 const GRPC_SERVER_HOST = process.env.GRPC_SERVER_HOST|| ip.address();
-const PROTO_PATH = "./src/proto/scooters.proto";
 
-var packageDefinition = protoLoader.loadSync(
-    PROTO_PATH,
+let packageDefinition = protoLoader.loadSync(
+    "./src/proto/scooters.proto",
     {
         keepCase: true,
         longs: String,
@@ -18,11 +17,9 @@ var packageDefinition = protoLoader.loadSync(
 );
 const ScootersService = grpc.loadPackageDefinition(packageDefinition).ScootersService;
 
-const client = new ScootersService(
+const ScooterClient = new ScootersService(
     `${GRPC_SERVER_HOST}:${GRPC_SERVER_PORT}`,
     grpc.credentials.createInsecure()
 );
 
-console.log(client)
-
-export default client;
+export default ScooterClient;

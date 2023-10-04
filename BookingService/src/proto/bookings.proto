@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message Empty {}
+
+message Booking {
+    string id = 1;
+}
+
+message BookingList {
+   repeated Booking booking = 1;
+}
+
+service BookingsService {
+    rpc getBookingsIds (Empty) returns (BookingList) {}
+}

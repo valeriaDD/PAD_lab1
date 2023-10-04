@@ -3,8 +3,9 @@ services:
     container_name: scooters-management
     build: ./ScootersService
     image: scooters_management:1.0
+    restart: always
     volumes:
-      - $HOME/scooters-management:/src
+      - ./ScootersService:/user/src
     ports:
       - 3000:3000
       - 30001:30001
@@ -54,8 +55,9 @@ services:
     container_name: bookings-management
     build: ./BookingService
     image: bookings_management:1.0
+    restart: always
     volumes:
-      - $HOME/bookings-management:/src
+      - ./BookingService:/user/src
     ports:
       - 3001:3001
     expose:
