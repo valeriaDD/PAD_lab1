@@ -2,7 +2,7 @@ import * as protoLoader from "@grpc/proto-loader";
 import * as grpc from "@grpc/grpc-js";
 import ip from "ip";
 
-const GRPC_SERVER_PORT = process.env.GRPC_SERVER_PORT || 30001;
+const GRPC_SERVER_PORT = process.env.GRPC_SERVER_PORT || 3000;
 const GRPC_SERVER_HOST = process.env.GRPC_SERVER_HOST|| ip.address();
 
 let packageDefinition = protoLoader.loadSync(
