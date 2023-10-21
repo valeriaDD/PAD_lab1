@@ -1,12 +1,11 @@
 import ip from "ip";
 import * as protoLoader from "@grpc/proto-loader";
 import * as grpc from "@grpc/grpc-js";
-import log from "./logger.js";
+import log from "../config/logger.js";
 
 const GRPC_PORT = process.env.SERVER_PORT || 3000;
 const GRPC_SERVER_HOST = process.env.SERVICE_NAME || ip.address();
-const GRPC_SERVER_PORT = `${GRPC_SERVER_HOST}:${GRPC_PORT}`
-
+const GRPC_SERVER_PORT = `${GRPC_SERVER_HOST}:${GRPC_PORT}`;
 
 let bookingPackageDefinition = protoLoader.loadSync(
     "./src/proto/bookings.proto",
@@ -23,7 +22,6 @@ let bookingPackageDefinition = protoLoader.loadSync(
 const protoServer = new grpc.Server();
 
 const bookingServiceProto = grpc.loadPackageDefinition(bookingPackageDefinition);
-
 protoServer.addService(bookingServiceProto.BookingsService.service, {
     getBookingsIds: (_, callback) => {
         log.info("GRPC call to getBookingsIds")
@@ -39,6 +37,5 @@ protoServer.bindAsync(
         protoServer.start();
     }
 );
-
 
 export default protoServer;
