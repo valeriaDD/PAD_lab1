@@ -15,6 +15,7 @@ class ServiceDiscovery(pb2_grpc.ServiceRegistryServicer):
     def __init__(self):
         self.service_instances = {}
         self.round_robin = {}
+        self.timeout = 3.0
 
         health_check_thread = threading.Thread(target=self.periodic_health_check)
         health_check_thread.daemon = True
@@ -80,7 +81,7 @@ class ServiceDiscovery(pb2_grpc.ServiceRegistryServicer):
         try:
             channel = grpc.insecure_channel(f"{host}:{port}")
             stub = pb2_grpc.ServiceRegistryStub(channel)
-            response = stub.CheckHealth(pb2.Empty())
+            response = stub.CheckHealth(pb2.Empty(),  timeout=self.timeout)
             is_healthy = response.status
             channel.close()
 
