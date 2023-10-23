@@ -19,16 +19,36 @@ let bookingPackageDefinition = protoLoader.loadSync(
     }
 );
 
+let serviceRegistryPackageDefinition = protoLoader.loadSync(
+    "./src/proto/service_discovery.proto",
+    {
+        keepCase: true,
+        longs: String,
+        enums: String,
+        defaults: true,
+        oneofs: true,
+    }
+);
+
 
 const protoServer = new grpc.Server();
 
 const bookingServiceProto = grpc.loadPackageDefinition(bookingPackageDefinition);
+const serviceRegistryProto = grpc.loadPackageDefinition(serviceRegistryPackageDefinition);
 protoServer.addService(bookingServiceProto.BookingsService.service, {
     getBookingsIds: (_, callback) => {
         log.info("GRPC call to getBookingsIds")
         callback(null, {"booking": [{id: 1}]});
     },
 });
+
+protoServer.addService(serviceRegistryProto.ServiceRegistry.service, {
+    CheckHealth: (_, callback) => {
+        log.info("Health check!!")
+        callback(null, {"status": true});
+    }
+});
+
 
 protoServer.bindAsync(
     GRPC_SERVER_PORT,

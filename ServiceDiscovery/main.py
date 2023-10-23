@@ -26,8 +26,11 @@ class ServiceDiscovery(pb2_grpc.ServiceRegistryServicer):
         if request.service_name not in self.service_instances:
             self.service_instances[request.service_name] = []
 
-        self.service_instances[request.service_name].append((request.host, request.port))
-        self.round_robin[request.service_name] = itertools.cycle(self.service_instances[request.service_name])
+        if (request.host, request.port) not in self.service_instances[request.service_name]:
+            self.service_instances[request.service_name].append((request.host, request.port))
+            self.round_robin[request.service_name] = itertools.cycle(self.service_instances[request.service_name])
+        else:
+            logging.info(f"Service {request.service_name} at {request.host}:{request.port} already exist.")
 
         return pb2.Empty()
 
@@ -62,7 +65,7 @@ class ServiceDiscovery(pb2_grpc.ServiceRegistryServicer):
 
                 self.round_robin[service_name] = itertools.cycle(instances)
 
-            time.sleep(30)
+            time.sleep(15)
 
     def check_service_health(self, host, port):
         try:
@@ -74,13 +77,14 @@ class ServiceDiscovery(pb2_grpc.ServiceRegistryServicer):
 
             return is_healthy
         except Exception as e:
+            logging.error(e)
             return False
 
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
     pb2_grpc.add_ServiceRegistryServicer_to_server(ServiceDiscovery(), server)
-    server.add_insecure_port("[::]:2000")  # Change the port as needed
+    server.add_insecure_port("[::]:2000")
     logging.info("Service discovery server started on port 2000")
     server.start()
     server.wait_for_termination()

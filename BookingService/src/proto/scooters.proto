@@ -3,11 +3,11 @@ syntax = "proto3";
 message Empty {}
 
 message Scooter {
-    string id = 1;
+  string id = 1;
 }
 
 message ScootersList {
-   repeated Scooter scooter = 1;
+  repeated Scooter scooter = 1;
 }
 
 service ScootersService {
