@@ -37,12 +37,21 @@ class ServiceDiscovery(pb2_grpc.ServiceRegistryServicer):
     def DiscoverService(self, request, context):
         logging.info(f"Received service discovery request for service {request.service_name}")
 
+        rr_content = {}
+        for k, v in self.round_robin.items():
+            current_item = next(v)
+            rr_content[k] = current_item
+            # Put the item back at the start of the iterator
+            self.round_robin[k] = itertools.chain([current_item], v)
+
+        logging.info(f"Current state of round_robin: {rr_content}")
+
         if request.service_name in self.round_robin:
             host, port = next(self.round_robin[request.service_name])
             return pb2.ServiceInfo(service_name=request.service_name, host=host, port=port)
 
         context.set_code(grpc.StatusCode.NOT_FOUND)
-        context.set_details("Service not found")
+        context.set_details(f"Service {request.service_name} - not found")
         return pb2.Empty()
 
     def CheckHealth(self, request, context):

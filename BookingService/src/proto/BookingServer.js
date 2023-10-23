@@ -2,7 +2,7 @@ import ip from "ip";
 import * as protoLoader from "@grpc/proto-loader";
 import * as grpc from "@grpc/grpc-js";
 import log from "../config/logger.js";
-import {registerWithServiceDiscovery} from "./ServiceDiscoveryClient.js";
+import {registerWithServiceDiscovery} from "./RegisterToServiceDiscovery.js";
 
 const GRPC_PORT = process.env.SERVER_PORT || 3000;
 const GRPC_SERVER_HOST = process.env.SERVICE_NAME || ip.address();
