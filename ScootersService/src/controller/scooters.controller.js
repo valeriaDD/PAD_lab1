@@ -1,79 +1,145 @@
+import * as queries from "../query/ScooterQueryService.js";
+import * as grpc from "@grpc/grpc-js";
 import log from "../config/logger.js";
-import database from "../config/mysql.config.js";
-import QUERY from "../query/scooters.query.js";
-import Http from "../utils/http.js";
 
-export const getScooters = (req, res) => {
-    log.info(`${req.method} ${req.originalUrl}, get all scooters.`);
-
-    database.query(QUERY.SELECT_SCOOTERS, [], (error, result) => {
-        if (error) {
-            log.error(error.message)
-            res.status(Http.INTERNAL_SERVER_ERROR.code).send(Http.INTERNAL_SERVER_ERROR.status);
-        } else {
-            res.status(Http.OK.code).send(result ? {data: result} : {});
-        }
-    });
-}
-
-export const createScooter = (req, res) => {
-    log.info(`${req.method} ${req.originalUrl}, create scooter.`);
-
-    database.query(QUERY.INSERT_SCOOTER(req.body), [], (error, result) => {
-        if (error) {
-            log.error(error.message);
-            res.status(Http.INTERNAL_SERVER_ERROR.code).send(error);
-        } else {
-            res.status(Http.CREATED.code).send();
-        }
-    })
-}
-
-export const getScooter = (req, res) => {
-    log.info(`${req.method} ${req.originalUrl}, get scooter.`);
-
-    database.query(QUERY.SELECT_SCOOTER_BY_ID, [req.params.id], (error, result) => {
-        if (result && result[0]) {
-            res.status(Http.OK.code).send({data: result});
-        } else {
-            log.error(`Patient with ${req.params.id} not found`);
-            res.status(Http.NOT_FOUND.code).send(Http.NOT_FOUND.status);
-        }
-    });
-}
-
-export const updateScooter = (req, res) => {
-    log.info(`${req.method} ${req.originalUrl}, fetch scooter.`);
-
-    database.query(QUERY.SELECT_SCOOTER, [req.params.id], (error, result) => {
-        if (result[0]) {
-            log.info(`${req.method} ${req.originalUrl}, update scooter.`);
-
-            database.query(QUERY.PATCH_SCOOTER(req.body, req.params.id), [], (error, result) => {
-                if (error) {
-                    log.error(error.message);
-                    res.status(Http.INTERNAL_SERVER_ERROR.code).send(error);
-                } else {
-                    res.status(Http.NO_CONTENT.code).send(Http.NO_CONTENT.status);
-                }
+export function getScooter(call, callback) {
+    const scooterId = call.request.id;
+    queries.getScooter(scooterId, (err, result) => {
+        if (err) {
+            callback({
+                code: grpc.status.INTERNAL,
+                details: "Error while fetching scooter from database"
             });
-
-        } else {
-            log.error(`Patient with ${req.params.id} not found`);
-            res.status(Http.NOT_FOUND.code).send(Http.NOT_FOUND.status);
+            return;
         }
+
+        if (!result || result.length === 0) {
+            callback({
+                code: grpc.status.NOT_FOUND,
+                details: "Scooter not found"
+            });
+            return;
+        }
+
+        const scooter = result[0];
+        callback(null, {
+            id: scooter.id,
+            label: scooter.label,
+            battery: scooter.battery,
+            location: scooter.location,
+            is_charging: scooter.is_charging
+        });
     });
 }
 
-
-export const deleteScooter = (req, res) => {
-    log.info(`${req.method} ${req.originalUrl}, deleting scooter.`);
-
-    database.query(QUERY.DELETE_SCOOTER, [req.params.id], (error, result) => {
-        if (result.affectedRows > 0) {
-            res.status(Http.NO_CONTENT.code).send(Http.NO_CONTENT.status);
-        } else {
-            res.status(Http.NOT_FOUND.code).send(Http.NOT_FOUND.status);
+export function getAllScooters(_, callback) {
+    queries.getAllScooters((err, results) => {
+        if (err) {
+            callback({
+                code: grpc.status.INTERNAL,
+                details: "Error while retrieving scooters from database"
+            });
+            return;
         }
+
+        if (!results) {
+            callback({
+                code: grpc.status.NOT_FOUND,
+                details: "No scooters found"
+            });
+            return;
+        }
+
+        const scooters = results.map(scooter => ({
+            id: scooter.id,
+            label: scooter.label,
+            battery: scooter.battery,
+            location: scooter.location,
+            is_charging: scooter.is_charging
+        }));
+        callback(null, {scooters});
+    });
+}
+
+export function updateScooter(call, callback) {
+    const scooterData = {
+        id: call.request.id,
+        label: call.request.label,
+        battery: call.request.battery,
+        location: call.request.location,
+        is_charging: call.request.is_charging
+    };
+
+    queries.updateScooter(scooterData, (err, result) => {
+        if (err) {
+            callback({
+                code: grpc.status.INTERNAL,
+                details: "Error while updating scooter in database"
+            });
+            return;
+        }
+
+        if (result.affectedRows === 0) {
+            callback({
+                code: grpc.status.NOT_FOUND,
+                details: "Scooter not found"
+            });
+            return;
+        }
+
+        callback(null, {});
+    });
+}
+
+export function deleteScooter(call, callback) {
+    const scooterId = call.request.id;
+    queries.deleteScooter(scooterId, (err, result) => {
+        if (err) {
+            callback({
+                code: grpc.status.INTERNAL,
+                details: "Error while deleting scooter from database"
+            });
+            return;
+        }
+
+        if (result.affectedRows === 0) {
+            callback({
+                code: grpc.status.NOT_FOUND,
+                details: "Scooter not found"
+            });
+            return;
+        }
+
+        callback(null, {});
+    });
+}
+
+export function createScooter(call, callback) {
+    const data = {
+        label: call.request.label,
+        battery: call.request.battery,
+        location: call.request.location,
+        is_charging: call.request.is_charging
+    };
+
+    log.info(data)
+
+
+    queries.createScooter(data, (err, result) => {
+        if (err) {
+            callback({
+                code: grpc.status.INTERNAL,
+                details: "Error while creating scooter in database"
+            });
+            return;
+        }
+
+        callback(null, {
+            id: result.id,
+            label: result.label,
+            battery: result.battery,
+            location: result.location,
+            is_charging: result.is_charging
+        });
     });
 }
