@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import service_discovery_pb2 as service__discovery__pb2
+from proto import service_discovery_pb2 as proto_dot_service__discovery__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   create_key=_descriptor._internal_create_key,
   serialized_pb=b'\n\x0e\x62ookings.proto\x1a\x17service_discovery.proto\"Z\n\x12\x42ookScooterRequest\x12\x12\n\nscooter_id\x18\x01 \x01(\t\x12\r\n\x05start\x18\x02 \x01(\t\x12\x12\n\nuser_email\x18\x03 \x01(\t\x12\r\n\x05title\x18\x04 \x01(\t\"t\n\x13\x42ookScooterResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05start\x18\x02 \x01(\t\x12\x12\n\nuser_email\x18\x03 \x01(\t\x12\x12\n\nscooter_id\x18\x04 \x01(\t\x12\x0b\n\x03\x65nd\x18\x05 \x01(\t\x12\r\n\x05title\x18\x06 \x01(\t\"\x1c\n\x0e\x45ndRideRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"\x1f\n\x11GetBookingRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"@\n\x16GetAllBookingsResponse\x12&\n\x08\x62ookings\x18\x01 \x03(\x0b\x32\x14.BookScooterResponse2\xe8\x01\n\x0f\x42ookingsService\x12\x38\n\x0b\x42ookScooter\x12\x13.BookScooterRequest\x1a\x14.BookScooterResponse\x12\x30\n\x07\x45ndRide\x12\x0f.EndRideRequest\x1a\x14.BookScooterResponse\x12\x36\n\nGetBooking\x12\x12.GetBookingRequest\x1a\x14.BookScooterResponse\x12\x31\n\x0eGetAllBookings\x12\x06.Empty\x1a\x17.GetAllBookingsResponseb\x06proto3'
   ,
-  dependencies=[service__discovery__pb2.DESCRIPTOR,])
+  dependencies=[proto_dot_service__discovery__pb2.DESCRIPTOR, ])
 
 
 
@@ -332,7 +332,7 @@ _BOOKINGSSERVICE = _descriptor.ServiceDescriptor(
     full_name='BookingsService.GetAllBookings',
     index=3,
     containing_service=None,
-    input_type=service__discovery__pb2._EMPTY,
+    input_type=proto_dot_service__discovery__pb2._EMPTY,
     output_type=_GETALLBOOKINGSRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,

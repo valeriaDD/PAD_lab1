@@ -52,7 +52,7 @@ Response body:
 }
 ```
 
-2. **PUT**: `/book/{id}/end-ride` End booking by id
+2. **PATCH**: `/book/{id}/end-ride` End booking by id
 
 No Request Body
 

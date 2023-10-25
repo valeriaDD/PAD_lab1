@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from proto import bookings_pb2 as bookings__pb2
-from proto  import service_discovery_pb2 as service__discovery__pb2
+from proto import bookings_pb2 as proto_dot_bookings__pb2
+from proto import service_discovery_pb2 as proto_dot_service__discovery__pb2
 
 
 class BookingsServiceStub(object):
@@ -17,23 +17,23 @@ class BookingsServiceStub(object):
         """
         self.BookScooter = channel.unary_unary(
                 '/BookingsService/BookScooter',
-                request_serializer=bookings__pb2.BookScooterRequest.SerializeToString,
-                response_deserializer=bookings__pb2.BookScooterResponse.FromString,
+                request_serializer=proto_dot_bookings__pb2.BookScooterRequest.SerializeToString,
+                response_deserializer=proto_dot_bookings__pb2.BookScooterResponse.FromString,
                 )
         self.EndRide = channel.unary_unary(
                 '/BookingsService/EndRide',
-                request_serializer=bookings__pb2.EndRideRequest.SerializeToString,
-                response_deserializer=bookings__pb2.BookScooterResponse.FromString,
+                request_serializer=proto_dot_bookings__pb2.EndRideRequest.SerializeToString,
+                response_deserializer=proto_dot_bookings__pb2.BookScooterResponse.FromString,
                 )
         self.GetBooking = channel.unary_unary(
                 '/BookingsService/GetBooking',
-                request_serializer=bookings__pb2.GetBookingRequest.SerializeToString,
-                response_deserializer=bookings__pb2.BookScooterResponse.FromString,
+                request_serializer=proto_dot_bookings__pb2.GetBookingRequest.SerializeToString,
+                response_deserializer=proto_dot_bookings__pb2.BookScooterResponse.FromString,
                 )
         self.GetAllBookings = channel.unary_unary(
                 '/BookingsService/GetAllBookings',
-                request_serializer=service__discovery__pb2.Empty.SerializeToString,
-                response_deserializer=bookings__pb2.GetAllBookingsResponse.FromString,
+                request_serializer=proto_dot_service__discovery__pb2.Empty.SerializeToString,
+                response_deserializer=proto_dot_bookings__pb2.GetAllBookingsResponse.FromString,
                 )
 
 
@@ -69,23 +69,23 @@ def add_BookingsServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'BookScooter': grpc.unary_unary_rpc_method_handler(
                     servicer.BookScooter,
-                    request_deserializer=bookings__pb2.BookScooterRequest.FromString,
-                    response_serializer=bookings__pb2.BookScooterResponse.SerializeToString,
+                    request_deserializer=proto_dot_bookings__pb2.BookScooterRequest.FromString,
+                    response_serializer=proto_dot_bookings__pb2.BookScooterResponse.SerializeToString,
             ),
             'EndRide': grpc.unary_unary_rpc_method_handler(
                     servicer.EndRide,
-                    request_deserializer=bookings__pb2.EndRideRequest.FromString,
-                    response_serializer=bookings__pb2.BookScooterResponse.SerializeToString,
+                    request_deserializer=proto_dot_bookings__pb2.EndRideRequest.FromString,
+                    response_serializer=proto_dot_bookings__pb2.BookScooterResponse.SerializeToString,
             ),
             'GetBooking': grpc.unary_unary_rpc_method_handler(
                     servicer.GetBooking,
-                    request_deserializer=bookings__pb2.GetBookingRequest.FromString,
-                    response_serializer=bookings__pb2.BookScooterResponse.SerializeToString,
+                    request_deserializer=proto_dot_bookings__pb2.GetBookingRequest.FromString,
+                    response_serializer=proto_dot_bookings__pb2.BookScooterResponse.SerializeToString,
             ),
             'GetAllBookings': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAllBookings,
-                    request_deserializer=service__discovery__pb2.Empty.FromString,
-                    response_serializer=bookings__pb2.GetAllBookingsResponse.SerializeToString,
+                    request_deserializer=proto_dot_service__discovery__pb2.Empty.FromString,
+                    response_serializer=proto_dot_bookings__pb2.GetAllBookingsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -109,10 +109,10 @@ class BookingsService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/BookingsService/BookScooter',
-            bookings__pb2.BookScooterRequest.SerializeToString,
-            bookings__pb2.BookScooterResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+                                             proto_dot_bookings__pb2.BookScooterRequest.SerializeToString,
+                                             proto_dot_bookings__pb2.BookScooterResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def EndRide(request,
@@ -126,10 +126,10 @@ class BookingsService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/BookingsService/EndRide',
-            bookings__pb2.EndRideRequest.SerializeToString,
-            bookings__pb2.BookScooterResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+                                             proto_dot_bookings__pb2.EndRideRequest.SerializeToString,
+                                             proto_dot_bookings__pb2.BookScooterResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def GetBooking(request,
@@ -143,10 +143,10 @@ class BookingsService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/BookingsService/GetBooking',
-            bookings__pb2.GetBookingRequest.SerializeToString,
-            bookings__pb2.BookScooterResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+                                             proto_dot_bookings__pb2.GetBookingRequest.SerializeToString,
+                                             proto_dot_bookings__pb2.BookScooterResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def GetAllBookings(request,
@@ -160,7 +160,7 @@ class BookingsService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/BookingsService/GetAllBookings',
-            service__discovery__pb2.Empty.SerializeToString,
-            bookings__pb2.GetAllBookingsResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+                                             proto_dot_service__discovery__pb2.Empty.SerializeToString,
+                                             proto_dot_bookings__pb2.GetAllBookingsResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -4,7 +4,8 @@ import grpc
 from flask import Flask, request, abort
 from flask_caching import Cache
 
-from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc
+# from ApiGateway.proto import bookings_pb2_grpc
+from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s | [%(levelname)s]: %(message)s")
 
@@ -77,7 +78,22 @@ def get_booking(booking_id):
 
 @app.route('/book', methods=['GET'])
 def get_all_bookings():
-    return []
+    try:
+        with get_scooter_service_channel("bookings") as channel:
+            stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+            response = stub.GetAllBookings(service_discovery_pb2.Empty())
+            return [
+                {
+                    'id': booking.id,
+                    'title': booking.title,
+                    'start': booking.start,
+                    'user_email': booking.user_email,
+                    'scooter_id': booking.scooter_id,
+                    'end': booking.end
+                } for booking in response.bookings
+            ]
+    except grpc.RpcError as e:
+        abort(500, description=e.details())
 
 
 @app.route('/scooters/<int:scooter_id>', methods=['GET'])
