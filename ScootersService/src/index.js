@@ -22,13 +22,27 @@ const deadline = new Date(Date.now() + timeout);
 //     }
 // })
 
+// ServiceDiscoveryClient.DiscoverService({service_name: "bookings"}, {deadline: deadline}, (error, serviceInfo) => {
+//     if (!error) {
+//         BookingsClient(serviceInfo.host, serviceInfo.port)
+//             .BookScooter({scooter_id: 1, start: '2023-12-25 23:50:55', user_email: "test", title: "test"}, (error, callback) => {
+//                 if (error) log.error(error)
+//                 if (callback) log.info(callback)
+//             });
+//     } else {
+//         log.error('Failed to discover the service:', error);
+//     }
+// })
+
+
 ServiceDiscoveryClient.DiscoverService({service_name: "bookings"}, {deadline: deadline}, (error, serviceInfo) => {
     if (!error) {
         BookingsClient(serviceInfo.host, serviceInfo.port)
-            .BookScooter({scooter_id: 1, start:  new Date(), user_email: "test"}, (error, callback) => {
+            .endRide({id: 1}, (error, callback) => {
                 if (error) log.error(error)
                 if (callback) log.info(callback)
             });
+
     } else {
         log.error('Failed to discover the service:', error);
     }

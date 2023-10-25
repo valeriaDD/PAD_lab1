@@ -4,8 +4,8 @@ import log from "../config/logger.js";
 class BookingQueries {
     bookScooter(data, callback) {
         const query = `
-            INSERT INTO bookings (scooter_id, start, user_email)
-            VALUES ('${data.scooter_id}', '${data.start}', '${data.user_email}');
+            INSERT INTO bookings (scooter_id, start, user_email, title)
+            VALUES ('${data.scooter_id}', '${data.start}', '${data.user_email}', '${data.title}');
         `;
         db.query(query, (err, results) => {
             if (err) {

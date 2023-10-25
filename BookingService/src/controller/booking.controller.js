@@ -23,7 +23,7 @@ export function bookScooter(call, callback) {
         }
 
         const scooterClient = ScooterClient(serviceInfo.host, serviceInfo.port);
-        scooterClient.getScooter({id: scooterId}, (error, scooterInfo) => {
+        scooterClient.GetScooter({id: scooterId}, (error, scooterInfo) => {
             if (error) {
                 log.info(`Scooter ${scooterId} not found!`);
                 callback({
@@ -48,14 +48,28 @@ export function bookScooter(call, callback) {
 }
 
 export function endRide(call, callback) {
-    queries.endRide(call.request.id, (err, result) => {
+    queries.getBooking(call.request.id, (err, result) => {
         if (err) {
             callback({
                 code: grpc.status.INTERNAL,
-                details: "Error while updating database"
+                details: "Error while retrieving from database"
+            });
+        } else if (!result) {
+            callback({
+                code: grpc.status.NOT_FOUND,
+                details: "Booking not found"
             });
         } else {
-            getBooking({request: {id: call.request.id}}, callback);
+            queries.endRide(call.request.id, (err, result) => {
+                if (err) {
+                    callback({
+                        code: grpc.status.INTERNAL,
+                        details: "Error while updating database"
+                    });
+                } else {
+                    getBooking({request: {id: call.request.id}}, callback);
+                }
+            });
         }
     });
 }
