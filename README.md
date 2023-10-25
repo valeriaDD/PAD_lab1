@@ -3,6 +3,12 @@
 
 ## Scooters Renting service
 
+### How to run?
+Clone the repo, cd to the root of the project and run:
+```commandline
+    docker compose up --build
+```
+
 ### Assess Application Suitability
 
 In a scooter rental service, application load can vary significantly based on factors like location, 
@@ -29,8 +35,9 @@ Create a booking for a scooter with a specific id
 Request body:
 ```JSON
 {
+  "title": "Ride 1",
   "start": "2023-25-12 23:50:55",
-  "email": "email@test.com"
+  "user_email": "email@test.com"
 }
 ```
 Response body:
@@ -38,7 +45,8 @@ Response body:
 {
   "id": 1,
   "start": "2023-25-12 23:50:55",
-  "email": "email@test.com",
+  "user_email": "email@test.com",
+  "title": "Ride 1",
   "scooter_id": "2",
   "end": ""
 }
@@ -52,10 +60,11 @@ Response body:
 ```JSON
 {
   "id": 1,
+  "title": "Ride 1",
   "start": "2023-25-12 23:50:55",
-  "email": "email@test.com",
+  "user_email": "email@test.com",
   "scooter_id": "2",
-  "end": "2023-26-12 01:52:51",
+  "end": "2023-26-12 01:52:51"
 }
 ```
 
@@ -67,10 +76,11 @@ Response body:
 ```JSON
 {
   "id": 1,
+  "title": "Ride 1",
   "start": "2023-25-12 23:50:55",
-  "email": "email@test.com",
+  "user_email": "email@test.com",
   "scooter_id": "2",
-  "end": "2023-26-12 01:52:51",
+  "end": "2023-26-12 01:52:51"
 }
 ```
 4. **GET** `/book` Get all bookings, may include query params for filtering purposes
@@ -82,15 +92,17 @@ Response body:
 [
   {
     "id": 1,
+    "title": "Ride 1",
     "start": "2023-25-12 23:50:55",
-    "email": "email@test.com",
+    "user_email": "email@test.com",
     "scooter_id": "2",
     "end": "2023-26-12 01:52:51"
   },
   {
     "id": 2,
+    "title": "Ride 2",
     "start": "2023-26-12 23:50:55",
-    "email": "email@test.com",
+    "user_email": "email@test.com",
     "scooter_id": "2",
     "end": ""
   }
@@ -191,8 +203,6 @@ but the client application will send basic **HTTP** requests.
 
 Each service will operate on separate MySQL databases, to enhance performance of the system, a Redis cacheing
 system will be implemented at the level of API Gateway.
-
-![DatabaseModel.png](DatabaseModel.png)
 
 ### Deployment and Scaling
 

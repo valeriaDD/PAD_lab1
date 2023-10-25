@@ -18,10 +18,11 @@ services:
       DB_USER: 'admin'
       DB_PASSWORD: 'password'
       DB_NAME: scootersdb
-      DB_CONNECTION_LIMIT: 20
-      SERVICE_TAGS: dev
+      DB_CONNECTION_LIMIT: 10
       SERVICE_NAME: scooters-management
       SERVER_PORT: 3000
+      SERVICE_DISCOVERY_PORT: 2000
+      SERVICE_DISCOVERY_HOST: service-discovery
     depends_on:
       - scootersdb
       - service-discovery
