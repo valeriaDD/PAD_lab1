@@ -1,9 +1,9 @@
 import * as protoLoader from "@grpc/proto-loader";
 import * as grpc from "@grpc/grpc-js";
 
-function createScooterClient(serverHost, serverPort) {
+function createBookingClient(serverHost, serverPort) {
     let packageDefinition = protoLoader.loadSync(
-        "./src/proto/files/scooters.proto",
+        "./src/proto/files/bookings.proto",
         {
             keepCase: true,
             longs: String,
@@ -12,7 +12,7 @@ function createScooterClient(serverHost, serverPort) {
             oneofs: true,
         }
     );
-    const ScootersService = grpc.loadPackageDefinition(packageDefinition).ScooterService;
+    const ScootersService = grpc.loadPackageDefinition(packageDefinition).BookingsService;
 
     return  new ScootersService(
         `${serverHost}:${serverPort}`,
@@ -20,5 +20,5 @@ function createScooterClient(serverHost, serverPort) {
     );
 }
 
-export default createScooterClient;
+export default createBookingClient;
 

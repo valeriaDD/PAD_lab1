@@ -30,12 +30,7 @@ Request body:
 ```JSON
 {
   "start": "2023-25-12 23:50:55",
-  "email": "email@test.com",
-  "phone": "060606060",
-  "card_nr": "00000000000000",
-  "card_issue_date": "2023-25-12",
-  "card_expiration_date": "2027-25-12",
-  "csv": "111"
+  "email": "email@test.com"
 }
 ```
 Response body:
@@ -44,11 +39,8 @@ Response body:
   "id": 1,
   "start": "2023-25-12 23:50:55",
   "email": "email@test.com",
-  "phone": "060606060",
   "scooter_id": "2",
-  "end": "",
-  "price": "",
-  "payment_status": 0
+  "end": ""
 }
 ```
 
@@ -62,11 +54,8 @@ Response body:
   "id": 1,
   "start": "2023-25-12 23:50:55",
   "email": "email@test.com",
-  "phone": "060606060",
   "scooter_id": "2",
   "end": "2023-26-12 01:52:51",
-  "price": "82.67",
-  "payment_status": 1
 }
 ```
 
@@ -80,11 +69,8 @@ Response body:
   "id": 1,
   "start": "2023-25-12 23:50:55",
   "email": "email@test.com",
-  "phone": "060606060",
   "scooter_id": "2",
   "end": "2023-26-12 01:52:51",
-  "price": "82.67",
-  "payment_status": 1
 }
 ```
 4. **GET** `/book` Get all bookings, may include query params for filtering purposes
@@ -98,21 +84,15 @@ Response body:
     "id": 1,
     "start": "2023-25-12 23:50:55",
     "email": "email@test.com",
-    "phone": "060606060",
     "scooter_id": "2",
-    "end": "2023-26-12 01:52:51",
-    "price": "82.67",
-    "payment_status": 1
+    "end": "2023-26-12 01:52:51"
   },
   {
     "id": 2,
     "start": "2023-26-12 23:50:55",
     "email": "email@test.com",
-    "phone": "060606060",
     "scooter_id": "2",
-    "end": "",
-    "price": "7",
-    "payment_status": 0
+    "end": ""
   }
 ]
 ```

@@ -92,7 +92,7 @@ class ServiceDiscovery(pb2_grpc.ServiceRegistryServicer):
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
     pb2_grpc.add_ServiceRegistryServicer_to_server(ServiceDiscovery(), server)
     server.add_insecure_port("[::]:2000")
     logging.info("Service discovery server started on port 2000")

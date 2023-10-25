@@ -7,7 +7,7 @@ const QUERY = {
                       FROM scooters
                       ORDER BY created_at DESC`,
 
-    SELECT_SCOOTER: `SELECT *
+    SELECT_SCOOTER_BY_ID: `SELECT *
                      FROM scooters
                      WHERE id = ?`,
 

@@ -63,16 +63,16 @@ services:
       - 3001
     environment:
       DB_HOST: bookingsdb
-      DB_PORT: 3305
+      DB_PORT: 3306
       DB_USER: 'admin'
       DB_PASSWORD: 'password'
       DB_NAME: bookingsdb
-      DB_CONNECTION_LIMIT: 20
-      SERVICE_TAGS: dev
+      DB_CONNECTION_LIMIT: 10
       SERVICE_NAME: bookings-management
       SERVER_PORT: 3001
-      GRPC_SERVER_PORT: 3000
-      GRPC_SERVER_HOST: scooters-management
+      SERVICE_DISCOVERY_PORT: 2000
+      SERVICE_DISCOVERY_HOST: service-discovery
+      TIMEOUT: 3000
     depends_on:
       - bookingsdb
       - service-discovery
@@ -87,7 +87,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./BookingService/dbinit/init.sql:/docker-entrypoint-initdb.d/0_init.sql
-      - $HOME/database3:/var/lib/mysql
+      - $HOME/project/database1:/var/lib/mysql
     ports:
       - 3305:3306
     expose:

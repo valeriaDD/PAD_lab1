@@ -2,14 +2,15 @@ import ip from "ip";
 import * as protoLoader from "@grpc/proto-loader";
 import * as grpc from "@grpc/grpc-js";
 import log from "../config/logger.js";
-import {registerWithServiceDiscovery} from "./RegisterToServiceDiscovery.js";
+import {registerWithServiceDiscovery} from "./services/RegisterToServiceDiscovery.js";
+import {bookScooter, endRide, getAllBookings, getBooking} from "../controller/booking.controller.js";
 
 const GRPC_PORT = process.env.SERVER_PORT || 3000;
 const GRPC_SERVER_HOST = process.env.SERVICE_NAME || ip.address();
 const GRPC_SERVER_PORT = `${GRPC_SERVER_HOST}:${GRPC_PORT}`;
 
 let bookingPackageDefinition = protoLoader.loadSync(
-    "./src/proto/bookings.proto",
+    "./src/proto/files/bookings.proto",
     {
         keepCase: true,
         longs: String,
@@ -20,7 +21,7 @@ let bookingPackageDefinition = protoLoader.loadSync(
 );
 
 let serviceRegistryPackageDefinition = protoLoader.loadSync(
-    "./src/proto/service_discovery.proto",
+    "./src/proto/files/service_discovery.proto",
     {
         keepCase: true,
         longs: String,
@@ -30,16 +31,16 @@ let serviceRegistryPackageDefinition = protoLoader.loadSync(
     }
 );
 
-
 const protoServer = new grpc.Server();
 
 const bookingServiceProto = grpc.loadPackageDefinition(bookingPackageDefinition);
 const serviceRegistryProto = grpc.loadPackageDefinition(serviceRegistryPackageDefinition);
+
 protoServer.addService(bookingServiceProto.BookingsService.service, {
-    getBookingsIds: (_, callback) => {
-        log.info("GRPC call to getBookingsIds")
-        callback(null, {"booking": [{id: 1}]});
-    },
+    BookScooter: bookScooter,
+    EndRide: endRide,
+    GetBooking: getBooking,
+    GetAllBookings: getAllBookings
 });
 
 protoServer.addService(serviceRegistryProto.ServiceRegistry.service, {

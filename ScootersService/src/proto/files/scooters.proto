@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+
+service ScooterService {
+    rpc GetScooter(GetScooterRequest) returns (GetScooterResponse);
+}
+
+message Empty {}
+
+message GetScooterRequest {
+    int64 id = 1;
+}
+
+message GetScooterResponse {
+    int64 id = 1;
+    string label = 2;
+    int32 battery = 3;
+    string location = 4;
+    bool is_charging = 5;
+}

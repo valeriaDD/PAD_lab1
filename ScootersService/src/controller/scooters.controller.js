@@ -32,7 +32,7 @@ export const createScooter = (req, res) => {
 export const getScooter = (req, res) => {
     log.info(`${req.method} ${req.originalUrl}, get scooter.`);
 
-    database.query(QUERY.SELECT_SCOOTER, [req.params.id], (error, result) => {
+    database.query(QUERY.SELECT_SCOOTER_BY_ID, [req.params.id], (error, result) => {
         if (result && result[0]) {
             res.status(Http.OK.code).send({data: result});
         } else {
