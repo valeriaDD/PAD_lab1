@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "service_discovery.proto";
 
 service ScooterService {
     rpc GetScooter(GetScooterRequest) returns (GetScooterResponse);
@@ -7,8 +8,6 @@ service ScooterService {
     rpc DeleteScooter(DeleteScooterRequest) returns (Empty);
     rpc CreateScooter(CreateScooterRequest) returns (CreateScooterResponse);
 }
-
-message Empty {}
 
 message GetScooterRequest {
     int64 id = 1;

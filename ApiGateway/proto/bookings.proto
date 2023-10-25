@@ -1,4 +1,5 @@
 syntax = "proto3";
+import "service_discovery.proto";
 
 
 message BookScooterRequest {
@@ -28,8 +29,6 @@ message GetBookingRequest {
 message GetAllBookingsResponse {
     repeated BookScooterResponse bookings = 1;
 }
-
-message Empty {}
 
 service BookingsService {
     rpc BookScooter(BookScooterRequest) returns (BookScooterResponse);

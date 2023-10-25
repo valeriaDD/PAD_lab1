@@ -57,6 +57,8 @@ export function getAllScooters(_, callback) {
             location: scooter.location,
             is_charging: scooter.is_charging
         }));
+
+        log.info(scooters)
         callback(null, {scooters});
     });
 }
