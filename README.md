@@ -8,7 +8,7 @@ Clone the repo, cd to the root of the project and run:
 ```commandline
     docker compose up --build
 ```
-
+Now the endpoint can be teste using `localhost:2050`
 ### Assess Application Suitability
 
 In a scooter rental service, application load can vary significantly based on factors like location, 
