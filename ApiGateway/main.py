@@ -4,15 +4,15 @@ import grpc
 from flask import Flask, request, abort
 from flask_caching import Cache
 
-# from ApiGateway.proto import bookings_pb2_grpc
-from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc, bookings_pb2
+from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc, \
+    bookings_pb2
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s | [%(levelname)s]: %(message)s")
 
-
 config = {
     "DEBUG": True,
-    "CACHE_TYPE": "SimpleCache",
+    "CACHE_TYPE": "redis",
+    "CACHE_REDIS_URL": "redis://redis:6379/0",
     "CACHE_DEFAULT_TIMEOUT": 300
 }
 
@@ -53,6 +53,8 @@ def book_scooter(scooter_id):
         with get_scooter_service_channel("bookings") as channel:
             stub = bookings_pb2_grpc.BookingsServiceStub(channel)
             response = stub.BookScooter(request_data)
+
+            cache.delete('all_bookings')
             return {
                 'id': response.id,
                 'title': response.title,
@@ -61,6 +63,7 @@ def book_scooter(scooter_id):
                 'scooter_id': response.scooter_id,
                 'end': response.end
             }
+
     except grpc.RpcError as e:
         abort(500, description=e.details())
 
@@ -72,6 +75,10 @@ def end_ride(booking_id):
         with get_scooter_service_channel("bookings") as channel:
             stub = bookings_pb2_grpc.BookingsServiceStub(channel)
             response = stub.EndRide(request_data)
+
+            cache_key = f'booking_{booking_id}'
+            cache.delete(cache_key)
+            cache.delete('all_bookings')
             return {
                 'id': response.id,
                 'title': response.title,
@@ -82,6 +89,7 @@ def end_ride(booking_id):
             }
     except grpc.RpcError as e:
         abort(500, description=e.details())
+
 
 @app.route('/book/<int:booking_id>', methods=['GET'])
 def get_booking(booking_id):
@@ -90,7 +98,7 @@ def get_booking(booking_id):
         with get_scooter_service_channel("bookings") as channel:
             stub = bookings_pb2_grpc.BookingsServiceStub(channel)
             response = stub.GetBooking(request_data)
-            return {
+            booking = {
                 'id': response.id,
                 'title': response.title,
                 'start': response.start,
@@ -98,6 +106,8 @@ def get_booking(booking_id):
                 'scooter_id': response.scooter_id,
                 'end': response.end
             }
+            cache.set(f'booking_{booking_id}', booking, timeout=5)
+            return booking
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
             abort(404, description="Booking not found")
@@ -105,6 +115,7 @@ def get_booking(booking_id):
 
 
 @app.route('/book', methods=['GET'])
+@cache.cached(timeout=5, key_prefix='all_bookings')
 def get_all_bookings():
     try:
         with get_scooter_service_channel("bookings") as channel:
@@ -131,13 +142,17 @@ def get_scooter(scooter_id):
             stub = scooters_pb2_grpc.ScooterServiceStub(channel)
             request_data = scooters_pb2.GetScooterRequest(id=scooter_id)
             response = stub.GetScooter(request_data)
-            return {
+            scooter = {
                 "id": response.id,
                 "label": response.label,
                 "battery_life": response.battery,
                 "location": response.location,
                 "is_charging": response.is_charging
             }
+            cache.set(f'scooter_{scooter_id}', scooter, timeout=5)
+
+            return scooter
+
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
             abort(404, description="Scooter not found")
@@ -145,6 +160,7 @@ def get_scooter(scooter_id):
 
 
 @app.route('/scooters', methods=['GET'])
+@cache.cached(timeout=5, key_prefix='all_scooters')
 def get_all_scooters():
     try:
         with get_scooter_service_channel("scooters") as channel:
@@ -170,11 +186,16 @@ def update_scooter(scooter_id):
         with get_scooter_service_channel("scooters") as channel:
             stub = scooters_pb2_grpc.ScooterServiceStub(channel)
             stub.UpdateScooter(request_data)
+
+            cache_key = f'scooter_{scooter_id}'
+            cache.delete(cache_key)
+            cache.delete('all_scooters')
             return '', 204
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
             abort(404, description="Scooter not found")
         abort(500, description=e.details())
+
 
 @app.route('/scooters/<int:scooter_id>', methods=['DELETE'])
 def delete_scooter(scooter_id):
@@ -182,11 +203,16 @@ def delete_scooter(scooter_id):
         with get_scooter_service_channel("scooters") as channel:
             stub = scooters_pb2_grpc.ScooterServiceStub(channel)
             stub.DeleteScooter(scooters_pb2.DeleteScooterRequest(id=scooter_id))
-            return '', 204
+
+            cache_key = f'scooter_{scooter_id}'
+            cache.delete(cache_key)
+            cache.delete('all_scooters')
+        return '', 204
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
             abort(404, description="Scooter not found")
         abort(500, description=e.details())
+
 
 @app.route('/scooters', methods=['POST'])
 def create_scooter():
@@ -206,8 +232,8 @@ def create_scooter():
     except grpc.RpcError as e:
         abort(500, description=e)
 
+    cache.delete('all_scooters')
     return scooter_to_dict(response), 201
-
 
 def scooter_to_dict(object):
     return {

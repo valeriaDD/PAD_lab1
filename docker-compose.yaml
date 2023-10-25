@@ -137,6 +137,19 @@ services:
     networks:
       - scooter-rent
 
+  redis:
+    container_name: redis-container
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - scooter-rent
+
 networks:
   scooter-rent:
     driver: bridge
+
+volumes:
+  redis-data:
