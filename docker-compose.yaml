@@ -120,6 +120,23 @@ services:
     networks:
       - scooter-rent
 
+  api-gateway:
+    container_name: api-gateway
+    build: ./ApiGateway
+    image: api-gateway:1.0
+    restart: always
+    volumes:
+      - ./ApiGateway:/app
+    ports:
+      - 2050:2050
+    expose:
+      - 2050
+    environment:
+      SERVICE_NAME: api-gateway
+      SERVER_PORT: 2050
+    networks:
+      - scooter-rent
+
 networks:
   scooter-rent:
     driver: bridge

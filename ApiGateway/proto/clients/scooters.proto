@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+service ScooterService {
+    rpc GetScooter(GetScooterRequest) returns (GetScooterResponse);
+    rpc GetAllScooters(Empty) returns (GetAllScootersResponse);
+    rpc UpdateScooter(UpdateScooterRequest) returns (Empty);
+    rpc DeleteScooter(DeleteScooterRequest) returns (Empty);
+    rpc CreateScooter(CreateScooterRequest) returns (CreateScooterResponse);
+}
+
+message Empty {}
+
+message GetScooterRequest {
+    int64 id = 1;
+}
+
+message UpdateScooterRequest {
+    int64 id = 1;
+    string label = 2;
+    int32 battery = 3;
+    string location = 4;
+    bool is_charging = 5;
+}
+
+message DeleteScooterRequest {
+    int64 id = 1;
+}
+
+message CreateScooterRequest {
+    string label = 1;
+    int32 battery = 2;
+    string location = 3;
+    bool is_charging = 4;
+}
+
+message GetScooterResponse {
+    int64 id = 1;
+    string label = 2;
+    int32 battery = 3;
+    string location = 4;
+    bool is_charging = 5;
+}
+
+message GetAllScootersResponse {
+    repeated GetScooterResponse scooters = 1;
+}
+
+message CreateScooterResponse {
+    int64 id = 1;
+    string label = 2;
+    int32 battery = 3;
+    string location = 4;
+    bool is_charging = 5;
+}
