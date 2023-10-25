@@ -5,7 +5,7 @@ from flask import Flask, request, abort
 from flask_caching import Cache
 
 # from ApiGateway.proto import bookings_pb2_grpc
-from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc
+from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc, bookings_pb2
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s | [%(levelname)s]: %(message)s")
 
@@ -43,37 +43,65 @@ def hello_world():
 @app.route('/book/scooters/<int:scooter_id>', methods=['POST'])
 def book_scooter(scooter_id):
     data = request.json
-    booking = {
-        'id': 1,
-        'title': data['title'],
-        'start': data['start'],
-        'user_email': data['user_email'],
-        'scooter_id': scooter_id,
-        'end': ''
-    }
-    return booking
+    request_data = bookings_pb2.BookScooterRequest(
+        scooter_id=str(scooter_id),
+        start=data['start'],
+        user_email=data['user_email'],
+        title=data['title']
+    )
+    try:
+        with get_scooter_service_channel("bookings") as channel:
+            stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+            response = stub.BookScooter(request_data)
+            return {
+                'id': response.id,
+                'title': response.title,
+                'start': response.start,
+                'user_email': response.user_email,
+                'scooter_id': response.scooter_id,
+                'end': response.end
+            }
+    except grpc.RpcError as e:
+        abort(500, description=e.details())
 
 
-@app.route('/book/<int:booking_id>/end-ride', methods=['PUT'])
+@app.route('/book/<int:booking_id>/end-ride', methods=['PATCH'])
 def end_ride(booking_id):
-    booking = {
-        'id': booking_id,
-        'end': 'now'
-    }
-    return booking
-
+    request_data = bookings_pb2.EndRideRequest(id=booking_id)
+    try:
+        with get_scooter_service_channel("bookings") as channel:
+            stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+            response = stub.EndRide(request_data)
+            return {
+                'id': response.id,
+                'title': response.title,
+                'start': response.start,
+                'user_email': response.user_email,
+                'scooter_id': response.scooter_id,
+                'end': response.end
+            }
+    except grpc.RpcError as e:
+        abort(500, description=e.details())
 
 @app.route('/book/<int:booking_id>', methods=['GET'])
 def get_booking(booking_id):
-    booking = {
-        'id': booking_id,
-        'title': 'title',
-        'start': 'start',
-        'user_email': 'user_email',
-        'scooter_id': 1,
-        'end': ''
-    }
-    return booking
+    request_data = bookings_pb2.GetBookingRequest(id=booking_id)
+    try:
+        with get_scooter_service_channel("bookings") as channel:
+            stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+            response = stub.GetBooking(request_data)
+            return {
+                'id': response.id,
+                'title': response.title,
+                'start': response.start,
+                'user_email': response.user_email,
+                'scooter_id': response.scooter_id,
+                'end': response.end
+            }
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            abort(404, description="Booking not found")
+        abort(500, description=e.details())
 
 
 @app.route('/book', methods=['GET'])
