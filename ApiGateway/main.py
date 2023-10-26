@@ -1,4 +1,6 @@
 import logging
+import threading
+import time
 
 import grpc
 from flask import Flask, request, abort
@@ -23,6 +25,8 @@ app = Flask(__name__)
 app.config.from_mapping(config)
 cache = Cache(app)
 
+semaphore = threading.Semaphore(2)
+
 
 def get_scooter_service_channel(service_name):
     try:
@@ -37,35 +41,38 @@ def get_scooter_service_channel(service_name):
 @app.route("/")
 @cache.cached(timeout=5)
 def hello_world():
-    return "hello!!"
+    with semaphore:
+        time.sleep(3)
+        return "hello!!"
 
 
 @app.route('/book/scooters/<int:scooter_id>', methods=['POST'])
 def book_scooter(scooter_id):
-    data = request.json
-    request_data = bookings_pb2.BookScooterRequest(
-        scooter_id=str(scooter_id),
-        start=data['start'],
-        user_email=data['user_email'],
-        title=data['title']
-    )
-    try:
-        with get_scooter_service_channel("bookings") as channel:
-            stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-            response = stub.BookScooter(request_data, timeout=5.0)
+    with semaphore:
+        data = request.json
+        request_data = bookings_pb2.BookScooterRequest(
+            scooter_id=str(scooter_id),
+            start=data['start'],
+            user_email=data['user_email'],
+            title=data['title']
+        )
+        try:
+            with get_scooter_service_channel("bookings") as channel:
+                stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+                response = stub.BookScooter(request_data, timeout=5.0)
 
-            cache.delete('all_bookings')
-            return {
-                'id': response.id,
-                'title': response.title,
-                'start': response.start,
-                'user_email': response.user_email,
-                'scooter_id': response.scooter_id,
-                'end': response.end
-            }
+                cache.delete('all_bookings')
+                return {
+                    'id': response.id,
+                    'title': response.title,
+                    'start': response.start,
+                    'user_email': response.user_email,
+                    'scooter_id': response.scooter_id,
+                    'end': response.end
+                }
 
-    except grpc.RpcError as e:
-        abort(500, description=e.details())
+        except grpc.RpcError as e:
+            abort(500, description=e.details())
 
 
 @app.route('/book/<int:booking_id>/end-ride', methods=['PATCH'])
@@ -234,6 +241,7 @@ def create_scooter():
     cache.delete('all_scooters')
     return scooter_to_dict(response), 201
 
+
 def scooter_to_dict(object):
     return {
         "id": object.id,
@@ -255,4 +263,4 @@ def not_found_error(error):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=2050, host="api-gateway")
+    app.run(debug=True, port=2050, host="api-gateway", threaded=True)

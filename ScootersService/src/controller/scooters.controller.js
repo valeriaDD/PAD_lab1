@@ -4,6 +4,7 @@ import log from "../config/logger.js";
 
 export function getScooter(call, callback) {
     const scooterId = call.request.id;
+    log.info(`Request to get id ${scooterId}`);
     queries.getScooter(scooterId, (err, result) => {
         if (err) {
             callback({
@@ -33,6 +34,7 @@ export function getScooter(call, callback) {
 }
 
 export function getAllScooters(_, callback) {
+        log.info(`Request to get all`);
     // setTimeout(() => {
             queries.getAllScooters((err, results) => {
         if (err) {
@@ -97,6 +99,7 @@ export function updateScooter(call, callback) {
 
 export function deleteScooter(call, callback) {
     const scooterId = call.request.id;
+    log.info(`Request to delete id ${scooterId}`);
     queries.deleteScooter(scooterId, (err, result) => {
         if (err) {
             callback({
@@ -125,9 +128,6 @@ export function createScooter(call, callback) {
         location: call.request.location,
         is_charging: call.request.is_charging
     };
-
-    log.info(data)
-
 
     queries.createScooter(data, (err, result) => {
         if (err) {
