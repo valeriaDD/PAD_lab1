@@ -35,15 +35,15 @@ const deadline = new Date(Date.now() + timeout);
 // })
 
 
-ServiceDiscoveryClient.DiscoverService({service_name: "bookings"}, {deadline: deadline}, (error, serviceInfo) => {
-    if (!error) {
-        BookingsClient(serviceInfo.host, serviceInfo.port)
-            .endRide({id: 1}, (error, callback) => {
-                if (error) log.error(error)
-                if (callback) log.info(callback)
-            });
-
-    } else {
-        log.error('Failed to discover the service:', error);
-    }
-})
+// ServiceDiscoveryClient.DiscoverService({service_name: "bookings"}, {deadline: deadline}, (error, serviceInfo) => {
+//     if (!error) {
+//         BookingsClient(serviceInfo.host, serviceInfo.port)
+//             .endRide({id: 1}, (error, callback) => {
+//                 if (error) log.error(error)
+//                 if (callback) log.info(callback)
+//             });
+//
+//     } else {
+//         log.error('Failed to discover the service:', error);
+//     }
+// })

@@ -33,7 +33,8 @@ export function getScooter(call, callback) {
 }
 
 export function getAllScooters(_, callback) {
-    queries.getAllScooters((err, results) => {
+    // setTimeout(() => {
+            queries.getAllScooters((err, results) => {
         if (err) {
             callback({
                 code: grpc.status.INTERNAL,
@@ -61,6 +62,7 @@ export function getAllScooters(_, callback) {
         log.info(scooters)
         callback(null, {scooters});
     });
+    // }, 6000)
 }
 
 export function updateScooter(call, callback) {

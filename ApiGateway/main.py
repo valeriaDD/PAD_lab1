@@ -52,7 +52,7 @@ def book_scooter(scooter_id):
     try:
         with get_scooter_service_channel("bookings") as channel:
             stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-            response = stub.BookScooter(request_data)
+            response = stub.BookScooter(request_data, timeout=5.0)
 
             cache.delete('all_bookings')
             return {
@@ -74,7 +74,7 @@ def end_ride(booking_id):
     try:
         with get_scooter_service_channel("bookings") as channel:
             stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-            response = stub.EndRide(request_data)
+            response = stub.EndRide(request_data, timeout=5.0)
 
             cache_key = f'booking_{booking_id}'
             cache.delete(cache_key)
@@ -97,7 +97,7 @@ def get_booking(booking_id):
     try:
         with get_scooter_service_channel("bookings") as channel:
             stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-            response = stub.GetBooking(request_data)
+            response = stub.GetBooking(request_data, timeout=5.0)
             booking = {
                 'id': response.id,
                 'title': response.title,
@@ -120,7 +120,7 @@ def get_all_bookings():
     try:
         with get_scooter_service_channel("bookings") as channel:
             stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-            response = stub.GetAllBookings(service_discovery_pb2.Empty())
+            response = stub.GetAllBookings(service_discovery_pb2.Empty(), timeout=5.0)
             return [
                 {
                     'id': booking.id,
@@ -141,7 +141,7 @@ def get_scooter(scooter_id):
         with get_scooter_service_channel("scooters") as channel:
             stub = scooters_pb2_grpc.ScooterServiceStub(channel)
             request_data = scooters_pb2.GetScooterRequest(id=scooter_id)
-            response = stub.GetScooter(request_data)
+            response = stub.GetScooter(request_data, timeout=5.0)
             scooter = {
                 "id": response.id,
                 "label": response.label,
@@ -165,8 +165,7 @@ def get_all_scooters():
     try:
         with get_scooter_service_channel("scooters") as channel:
             stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            response = stub.GetAllScooters(service_discovery_pb2.Empty())
-            logging.info(response)
+            response = stub.GetAllScooters(service_discovery_pb2.Empty(), timeout=5.0)
             return [scooter_to_dict(scooter) for scooter in response.scooters]
     except grpc.RpcError as e:
         abort(500, description=e.details())
@@ -185,7 +184,7 @@ def update_scooter(scooter_id):
     try:
         with get_scooter_service_channel("scooters") as channel:
             stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            stub.UpdateScooter(request_data)
+            stub.UpdateScooter(request_data, timeout=5.0)
 
             cache_key = f'scooter_{scooter_id}'
             cache.delete(cache_key)
@@ -202,7 +201,7 @@ def delete_scooter(scooter_id):
     try:
         with get_scooter_service_channel("scooters") as channel:
             stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            stub.DeleteScooter(scooters_pb2.DeleteScooterRequest(id=scooter_id))
+            stub.DeleteScooter(scooters_pb2.DeleteScooterRequest(id=scooter_id), timeout=5.0)
 
             cache_key = f'scooter_{scooter_id}'
             cache.delete(cache_key)
@@ -228,7 +227,7 @@ def create_scooter():
     try:
         with get_scooter_service_channel("scooters") as channel:
             stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            response = stub.CreateScooter(request_data)
+            response = stub.CreateScooter(request_data, timeout=5.0)
     except grpc.RpcError as e:
         abort(500, description=e)
 
