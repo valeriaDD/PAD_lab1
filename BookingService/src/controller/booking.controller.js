@@ -75,6 +75,7 @@ export function endRide(call, callback) {
 }
 
 export function getBooking(call, callback) {
+    log.info(`Query for book`)
     queries.getBooking(call.request.id, (err, result) => {
         if (err) {
             callback({

@@ -25,7 +25,7 @@ The application itself will be composed of two microservices:
  - **ScootersManagement Service** - responsible for scooters CRUD operations, storing data from GPS and
 battery sensors
 
-![ArchitectureDiagram.jpeg](ArchitectureDiagram.jpeg)
+![ArchitectureDiagram.jpeg](ArchitectureDiagram.png)
 
 ### Booking Service endpoints
 
@@ -206,5 +206,41 @@ system will be implemented at the level of API Gateway.
 
 ### Deployment and Scaling
 
-The services and databases will containerized using Docker, for orchestration
-Kubernetes will eb used.
+The services and databases will containerized using Docker.
+
+### Cache High Availability and Consistent Hashing
+
+Redis Cluster automatically shards data across multiple Redis nodes, which means 
+that it spreads the data across different nodes in the cluster. Each node holds a 
+subset of the hash slots, and every key is hashed into one of these slots. In Redis Cluster, the consistent 
+hashing is somewhat abstracted from the user, as Redis takes care of assigning keys to hash slots.  
+
+### 2 Phase commits
+
+A saga is a sequence of local transactions where each transaction updates data within a 
+single service. If one transaction fails, saga orchestrates a series of compensating transactions 
+that undo the changes that were made by the preceding transactions. So the transaction will begin in 
+Booking Service - it will attempt to update scooter service in case it was successful - the update of
+the booking service will be attempt - else will fire an unsuccessful response to the user.
+
+### ELK Stack
+
+The ELK Stack is a collection of three open-source products — Elasticsearch, Logstash, 
+and Kibana — from Elastic.
+
+**Step 1:** Install Elasticsearch, Logstash, and Kibana
+
+**Step 2:** Configure Logstash
+
+**Step 3:** Start Logstash
+
+**Step 4:** Send Logs to Logstash
+
+**Step 5:** Explore Data with Kibana
+
+The info that i will log is the request and responses and the data will be used to analyse the 
+bussines logic of the app let's say.
+
+### Database redundancy/replication + failover
+
+The scooter database will be replicated using mater-slave replication in mysql database system.
