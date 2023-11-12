@@ -214,6 +214,7 @@ Redis Cluster automatically shards data across multiple Redis nodes, which means
 that it spreads the data across different nodes in the cluster. Each node holds a 
 subset of the hash slots, and every key is hashed into one of these slots. In Redis Cluster, the consistent 
 hashing is somewhat abstracted from the user, as Redis takes care of assigning keys to hash slots.  
+To include consistend hashing i will use `hash_ring` python library.
 
 ### 2 Phase commits
 
