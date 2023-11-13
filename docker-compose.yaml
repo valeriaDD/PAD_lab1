@@ -147,6 +147,16 @@ services:
     networks:
       - scooter-rent
 
+  redis_2:
+    container_name: redis-container-2
+    image: redis:latest
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data2:/data
+    networks:
+      - scooter-rent
+
   elasticsearch:
     image: elasticsearch:7.16.2
     container_name: elasticsearch
@@ -198,5 +208,6 @@ networks:
 
 volumes:
   redis-data:
+  redis-data2:
   elasticsearch-data-volume:
     driver: local

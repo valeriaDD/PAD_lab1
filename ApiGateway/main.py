@@ -4,32 +4,29 @@ import time
 
 import grpc
 from flask import Flask, request, abort
-from flask_caching import Cache
 
+from CacheHashRing import CacheHashRing
 from CircuitBreaker import CircuitBreaker
 from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc, \
     bookings_pb2
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s | [%(levelname)s]: %(message)s")
 
-config = {
-    "DEBUG": True,
-    "CACHE_TYPE": "redis",
-    "CACHE_REDIS_URL": "redis://redis:6379/0",
-    "CACHE_DEFAULT_TIMEOUT": 300
-}
-
 SERVICE_DISCOVERY_PORT = 2000
 SERVICE_NAME = "service-discovery"
 
 app = Flask(__name__)
-app.config.from_mapping(config)
-cache = Cache(app)
 
 semaphore = threading.Semaphore(2)
-
 booking_circuit_breaker = CircuitBreaker()
 scooters_circuit_breaker = CircuitBreaker()
+
+nodes = {
+    'redis_node_1': {'host': 'redis', 'port': 6379},
+    'redis_node_2': {'host': 'redis_2', 'port': 6379},
+}
+
+redis_hash_ring = CacheHashRing(nodes)
 
 
 def get_scooter_service_channel(service_name):
@@ -43,7 +40,6 @@ def get_scooter_service_channel(service_name):
 
 
 @app.route("/")
-@cache.cached(timeout=5)
 def hello_world():
     with semaphore:
         time.sleep(3)
@@ -65,7 +61,7 @@ def book_scooter(scooter_id):
                 stub = bookings_pb2_grpc.BookingsServiceStub(channel)
                 response = booking_circuit_breaker.call(lambda: stub.BookScooter(request_data, timeout=5.0))
 
-                cache.delete('all_bookings')
+                redis_hash_ring.delete('all_bookings')
                 return {
                     'id': response.id,
                     'title': response.title,
@@ -88,8 +84,8 @@ def end_ride(booking_id):
             response = booking_circuit_breaker.call(lambda: stub.EndRide(request_data, timeout=5.0))
 
             cache_key = f'booking_{booking_id}'
-            cache.delete(cache_key)
-            cache.delete('all_bookings')
+            redis_hash_ring.delete(cache_key)
+            redis_hash_ring.delete('all_bookings')
             return {
                 'id': response.id,
                 'title': response.title,
@@ -118,7 +114,7 @@ def get_booking(booking_id):
                 'scooter_id': response.scooter_id,
                 'end': response.end
             }
-            cache.set(f'booking_{booking_id}', booking, timeout=5)
+            redis_hash_ring.set(f'booking_{booking_id}', booking)
             return booking
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
@@ -127,7 +123,6 @@ def get_booking(booking_id):
 
 
 @app.route('/book', methods=['GET'])
-@cache.cached(timeout=5, key_prefix='all_bookings')
 def get_all_bookings():
     try:
         with get_scooter_service_channel("bookings") as channel:
@@ -135,7 +130,7 @@ def get_all_bookings():
             response = booking_circuit_breaker.call(
                 lambda: stub.GetAllBookings(service_discovery_pb2.Empty(), timeout=5.0))
 
-            return [
+            bookings = [
                 {
                     'id': booking.id,
                     'title': booking.title,
@@ -145,6 +140,11 @@ def get_all_bookings():
                     'end': booking.end
                 } for booking in response.bookings
             ]
+
+            redis_hash_ring.set('all_bookings', bookings)
+
+            return bookings
+
     except grpc.RpcError as e:
         abort(500, description=e.details())
 
@@ -164,7 +164,7 @@ def get_scooter(scooter_id):
                 "location": response.location,
                 "is_charging": response.is_charging
             }
-            cache.set(f'scooter_{scooter_id}', scooter, timeout=5)
+            redis_hash_ring.set(f'scooter_{scooter_id}', scooter)
 
             return scooter
 
@@ -175,7 +175,6 @@ def get_scooter(scooter_id):
 
 
 @app.route('/scooters', methods=['GET'])
-@cache.cached(timeout=5, key_prefix='all_scooters')
 def get_all_scooters():
     try:
         with get_scooter_service_channel("scooters") as channel:
@@ -183,7 +182,9 @@ def get_all_scooters():
             response = scooters_circuit_breaker.call(
                 lambda: stub.GetAllScooters(service_discovery_pb2.Empty(), timeout=5.0))
 
-            return [scooter_to_dict(scooter) for scooter in response.scooters]
+            scooters = [scooter_to_dict(scooter) for scooter in response.scooters]
+            redis_hash_ring.set('all_scooters', scooters)
+            return scooters
     except grpc.RpcError as e:
         abort(500, description=e.details())
 
@@ -204,8 +205,8 @@ def update_scooter(scooter_id):
             scooters_circuit_breaker.call(lambda: stub.UpdateScooter(request_data, timeout=5.0))
 
             cache_key = f'scooter_{scooter_id}'
-            cache.delete(cache_key)
-            cache.delete('all_scooters')
+            redis_hash_ring.delete(cache_key)
+            redis_hash_ring.delete('all_scooters')
             return '', 204
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
@@ -225,8 +226,8 @@ def delete_scooter(scooter_id):
                 lambda: stub.DeleteScooter(scooters_pb2.DeleteScooterRequest(id=scooter_id), timeout=5.0))
 
             cache_key = f'scooter_{scooter_id}'
-            cache.delete(cache_key)
-            cache.delete('all_scooters')
+            redis_hash_ring.delete(cache_key)
+            redis_hash_ring.delete('all_scooters')
         return '', 204
     except grpc.RpcError as e:
         if e.code() == grpc.StatusCode.NOT_FOUND:
@@ -253,7 +254,7 @@ def create_scooter():
     except grpc.RpcError as e:
         abort(500, description=e)
 
-    cache.delete('all_scooters')
+    redis_hash_ring.delete('all_scooters')
     return scooter_to_dict(response), 201
 
 
