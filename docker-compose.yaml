@@ -81,36 +81,6 @@ services:
     networks:
       - scooter-rent
 
-  bookings-management2:
-    container_name: bookings-management2
-    build: ./BookingService
-    image: bookings_management:1.0
-    restart: always
-    volumes:
-      - ./BookingService:/user/src
-    ports:
-      - 3002:3001
-    expose:
-      - 3001
-    environment:
-      DB_HOST: bookingsdb
-      DB_PORT: 3306
-      DB_USER: 'admin'
-      DB_PASSWORD: 'password'
-      DB_NAME: bookingsdb
-      DB_CONNECTION_LIMIT: 10
-      SERVICE_NAME: bookings-management2
-      SERVER_PORT: 3002
-      SERVICE_DISCOVERY_PORT: 2000
-      SERVICE_DISCOVERY_HOST: service-discovery
-      TIMEOUT: 3000
-    depends_on:
-      - bookingsdb
-      - service-discovery
-      - scooters-management
-    networks:
-      - scooter-rent
-
   bookingsdb:
     image: mysql:8.0
     container_name: bookings-db

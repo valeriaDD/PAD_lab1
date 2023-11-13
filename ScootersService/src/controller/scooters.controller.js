@@ -34,9 +34,8 @@ export function getScooter(call, callback) {
 }
 
 export function getAllScooters(_, callback) {
-        log.info(`Request to get all`);
-    // setTimeout(() => {
-            queries.getAllScooters((err, results) => {
+    log.info(`Request to get all`);
+    queries.getAllScooters((err, results) => {
         if (err) {
             callback({
                 code: grpc.status.INTERNAL,
@@ -79,8 +78,8 @@ export function updateScooter(call, callback) {
     queries.updateScooter(scooterData, (err, result) => {
         if (err) {
             callback({
-                code: grpc.status.INTERNAL,
-                details: "Error while updating scooter in database"
+                code: grpc.status.INVALID_ARGUMENT,
+                details: err.sqlMessage,
             });
             return;
         }
@@ -132,7 +131,7 @@ export function createScooter(call, callback) {
     queries.createScooter(data, (err, result) => {
         if (err) {
             callback({
-                code: grpc.status.INTERNAL,
+                code: grpc.status.INVALID_ARGUMENT,
                 details: "Error while creating scooter in database"
             });
             return;

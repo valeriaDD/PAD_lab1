@@ -1,5 +1,8 @@
+import logging
 import time
 import grpc
+
+logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s | [%(levelname)s]: %(message)s")
 
 
 class CircuitBreaker:
@@ -11,10 +14,25 @@ class CircuitBreaker:
         self.state = "CLOSED"
         self.last_failure_time = None
 
+    def call(self, func, *args, **kwargs):
+        if self.is_open():
+            logging.error("Circuit breaker is OPEN")
+            raise grpc.RpcError("Circuit breaker is OPEN")
+
+        try:
+            result = func(*args, **kwargs)
+            self.on_success()
+            return result
+        except grpc.RpcError as e:
+            if e.code() == grpc.StatusCode.INTERNAL:
+                self.on_failure()
+            raise e
+
     def is_open(self):
         if self.state == "OPEN":
             if (time.time() - self.last_failure_time) > self.recovery_timeout:
                 self.state = "HALF-OPEN"
+                logging.info("Circuit breaker is HALF-OPEN")
                 return False
             return True
         return False
@@ -22,21 +40,11 @@ class CircuitBreaker:
     def on_success(self):
         self.state = "CLOSED"
         self.failures = 0
+        logging.info("Request succeeded")
 
     def on_failure(self):
         self.failures += 1
         if self.failures >= self.failure_threshold:
             self.state = "OPEN"
             self.last_failure_time = time.time()
-
-    def call(self, func, *args, **kwargs):
-        if self.is_open():
-            raise grpc.RpcError("Circuit breaker is OPEN")
-
-        try:
-            result = func(*args, **kwargs)
-            self.on_success()
-            return result
-        except self.expected_exception as e:
-            self.on_failure()
-            raise e
+            logging.error("Request failed")
