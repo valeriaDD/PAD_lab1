@@ -162,7 +162,8 @@ def get_scooter(scooter_id):
                 "label": response.label,
                 "battery_life": response.battery,
                 "location": response.location,
-                "is_charging": response.is_charging
+                "is_charging": response.is_charging,
+                "available": response.available
             }
             redis_hash_ring.set(f'scooter_{scooter_id}', scooter)
 
@@ -264,7 +265,8 @@ def scooter_to_dict(object):
         "label": object.label,
         "battery_life": object.battery,
         "location": object.location,
-        "is_charging": object.is_charging
+        "is_charging": object.is_charging,
+        "available": object.available,
     }
 
 

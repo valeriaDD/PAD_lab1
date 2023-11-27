@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from proto import scooters_pb2 as proto_dot_scooters__pb2
-from proto import service_discovery_pb2 as proto_dot_service__discovery__pb2
+from proto import scooters_pb2 as scooters__pb2
+from proto import service_discovery_pb2 as service__discovery__pb2
 
 
 class ScooterServiceStub(object):
@@ -17,28 +17,33 @@ class ScooterServiceStub(object):
         """
         self.GetScooter = channel.unary_unary(
                 '/ScooterService/GetScooter',
-                request_serializer=proto_dot_scooters__pb2.GetScooterRequest.SerializeToString,
-                response_deserializer=proto_dot_scooters__pb2.GetScooterResponse.FromString,
+                request_serializer=scooters__pb2.GetScooterRequest.SerializeToString,
+                response_deserializer=scooters__pb2.GetScooterResponse.FromString,
                 )
         self.GetAllScooters = channel.unary_unary(
                 '/ScooterService/GetAllScooters',
-                request_serializer=proto_dot_service__discovery__pb2.Empty.SerializeToString,
-                response_deserializer=proto_dot_scooters__pb2.GetAllScootersResponse.FromString,
+                request_serializer=service__discovery__pb2.Empty.SerializeToString,
+                response_deserializer=scooters__pb2.GetAllScootersResponse.FromString,
                 )
         self.UpdateScooter = channel.unary_unary(
                 '/ScooterService/UpdateScooter',
-                request_serializer=proto_dot_scooters__pb2.UpdateScooterRequest.SerializeToString,
-                response_deserializer=proto_dot_service__discovery__pb2.Empty.FromString,
+                request_serializer=scooters__pb2.UpdateScooterRequest.SerializeToString,
+                response_deserializer=service__discovery__pb2.Empty.FromString,
                 )
         self.DeleteScooter = channel.unary_unary(
                 '/ScooterService/DeleteScooter',
-                request_serializer=proto_dot_scooters__pb2.DeleteScooterRequest.SerializeToString,
-                response_deserializer=proto_dot_service__discovery__pb2.Empty.FromString,
+                request_serializer=scooters__pb2.DeleteScooterRequest.SerializeToString,
+                response_deserializer=service__discovery__pb2.Empty.FromString,
                 )
         self.CreateScooter = channel.unary_unary(
                 '/ScooterService/CreateScooter',
-                request_serializer=proto_dot_scooters__pb2.CreateScooterRequest.SerializeToString,
-                response_deserializer=proto_dot_scooters__pb2.CreateScooterResponse.FromString,
+                request_serializer=scooters__pb2.CreateScooterRequest.SerializeToString,
+                response_deserializer=scooters__pb2.CreateScooterResponse.FromString,
+                )
+        self.SetScooterAvailability = channel.unary_unary(
+                '/ScooterService/SetScooterAvailability',
+                request_serializer=scooters__pb2.SetAvailabilityRequest.SerializeToString,
+                response_deserializer=service__discovery__pb2.Empty.FromString,
                 )
 
 
@@ -75,33 +80,44 @@ class ScooterServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SetScooterAvailability(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ScooterServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetScooter': grpc.unary_unary_rpc_method_handler(
                     servicer.GetScooter,
-                    request_deserializer=proto_dot_scooters__pb2.GetScooterRequest.FromString,
-                    response_serializer=proto_dot_scooters__pb2.GetScooterResponse.SerializeToString,
+                    request_deserializer=scooters__pb2.GetScooterRequest.FromString,
+                    response_serializer=scooters__pb2.GetScooterResponse.SerializeToString,
             ),
             'GetAllScooters': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAllScooters,
-                    request_deserializer=proto_dot_service__discovery__pb2.Empty.FromString,
-                    response_serializer=proto_dot_scooters__pb2.GetAllScootersResponse.SerializeToString,
+                    request_deserializer=service__discovery__pb2.Empty.FromString,
+                    response_serializer=scooters__pb2.GetAllScootersResponse.SerializeToString,
             ),
             'UpdateScooter': grpc.unary_unary_rpc_method_handler(
                     servicer.UpdateScooter,
-                    request_deserializer=proto_dot_scooters__pb2.UpdateScooterRequest.FromString,
-                    response_serializer=proto_dot_service__discovery__pb2.Empty.SerializeToString,
+                    request_deserializer=scooters__pb2.UpdateScooterRequest.FromString,
+                    response_serializer=service__discovery__pb2.Empty.SerializeToString,
             ),
             'DeleteScooter': grpc.unary_unary_rpc_method_handler(
                     servicer.DeleteScooter,
-                    request_deserializer=proto_dot_scooters__pb2.DeleteScooterRequest.FromString,
-                    response_serializer=proto_dot_service__discovery__pb2.Empty.SerializeToString,
+                    request_deserializer=scooters__pb2.DeleteScooterRequest.FromString,
+                    response_serializer=service__discovery__pb2.Empty.SerializeToString,
             ),
             'CreateScooter': grpc.unary_unary_rpc_method_handler(
                     servicer.CreateScooter,
-                    request_deserializer=proto_dot_scooters__pb2.CreateScooterRequest.FromString,
-                    response_serializer=proto_dot_scooters__pb2.CreateScooterResponse.SerializeToString,
+                    request_deserializer=scooters__pb2.CreateScooterRequest.FromString,
+                    response_serializer=scooters__pb2.CreateScooterResponse.SerializeToString,
+            ),
+            'SetScooterAvailability': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetScooterAvailability,
+                    request_deserializer=scooters__pb2.SetAvailabilityRequest.FromString,
+                    response_serializer=service__discovery__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -125,10 +141,10 @@ class ScooterService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ScooterService/GetScooter',
-                                             proto_dot_scooters__pb2.GetScooterRequest.SerializeToString,
-                                             proto_dot_scooters__pb2.GetScooterResponse.FromString,
-                                             options, channel_credentials,
-                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            scooters__pb2.GetScooterRequest.SerializeToString,
+            scooters__pb2.GetScooterResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def GetAllScooters(request,
@@ -142,10 +158,10 @@ class ScooterService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ScooterService/GetAllScooters',
-                                             proto_dot_service__discovery__pb2.Empty.SerializeToString,
-                                             proto_dot_scooters__pb2.GetAllScootersResponse.FromString,
-                                             options, channel_credentials,
-                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            service__discovery__pb2.Empty.SerializeToString,
+            scooters__pb2.GetAllScootersResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def UpdateScooter(request,
@@ -159,10 +175,10 @@ class ScooterService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ScooterService/UpdateScooter',
-                                             proto_dot_scooters__pb2.UpdateScooterRequest.SerializeToString,
-                                             proto_dot_service__discovery__pb2.Empty.FromString,
-                                             options, channel_credentials,
-                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            scooters__pb2.UpdateScooterRequest.SerializeToString,
+            service__discovery__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def DeleteScooter(request,
@@ -176,10 +192,10 @@ class ScooterService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ScooterService/DeleteScooter',
-                                             proto_dot_scooters__pb2.DeleteScooterRequest.SerializeToString,
-                                             proto_dot_service__discovery__pb2.Empty.FromString,
-                                             options, channel_credentials,
-                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            scooters__pb2.DeleteScooterRequest.SerializeToString,
+            service__discovery__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
     def CreateScooter(request,
@@ -193,7 +209,24 @@ class ScooterService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ScooterService/CreateScooter',
-                                             proto_dot_scooters__pb2.CreateScooterRequest.SerializeToString,
-                                             proto_dot_scooters__pb2.CreateScooterResponse.FromString,
-                                             options, channel_credentials,
-                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+            scooters__pb2.CreateScooterRequest.SerializeToString,
+            scooters__pb2.CreateScooterResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SetScooterAvailability(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ScooterService/SetScooterAvailability',
+            scooters__pb2.SetAvailabilityRequest.SerializeToString,
+            service__discovery__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

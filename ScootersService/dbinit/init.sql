@@ -10,6 +10,7 @@ CREATE TABLE scooters
     battery     INT UNSIGNED    NOT NULL,
     location    VARCHAR(64)     NOT NULL,
     is_charging BOOLEAN         NOT NULL DEFAULT FALSE,
+    available   BOOLEAN         NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMP                DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP                DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 )

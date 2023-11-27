@@ -146,3 +146,31 @@ export function createScooter(call, callback) {
         });
     });
 }
+
+
+export function setAvailability(call, callback) {
+        const data = {
+        id: call.request.id,
+        available: call.request.available,
+    };
+
+        queries.updateScooter(data, (err, result) => {
+        if (err) {
+            callback({
+                code: grpc.status.INVALID_ARGUMENT,
+                details: err.sqlMessage,
+            });
+            return;
+        }
+
+        if (result.affectedRows === 0) {
+            callback({
+                code: grpc.status.NOT_FOUND,
+                details: "Scooter not found"
+            });
+            return;
+        }
+
+        callback(null, {});
+    });
+}

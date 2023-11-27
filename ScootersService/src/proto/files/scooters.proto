@@ -6,6 +6,7 @@ service ScooterService {
     rpc UpdateScooter(UpdateScooterRequest) returns (Empty);
     rpc DeleteScooter(DeleteScooterRequest) returns (Empty);
     rpc CreateScooter(CreateScooterRequest) returns (CreateScooterResponse);
+    rpc SetScooterAvailability(SetAvailabilityRequest) returns (Empty);
 }
 
 message Empty {}
@@ -39,6 +40,12 @@ message GetScooterResponse {
     int32 battery = 3;
     string location = 4;
     bool is_charging = 5;
+    bool available = 6;
+}
+
+message SetAvailabilityRequest {
+    int64 id = 1;
+    bool available = 2;
 }
 
 message GetAllScootersResponse {

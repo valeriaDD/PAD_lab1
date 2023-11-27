@@ -11,7 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-from proto import service_discovery_pb2 as proto_dot_service__discovery__pb2
+from proto import service_discovery_pb2 as service__discovery__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -20,9 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0escooters.proto\x1a\x17service_discovery.proto\"\x1f\n\x11GetScooterRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"i\n\x14UpdateScooterRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05label\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61ttery\x18\x03 \x01(\x05\x12\x10\n\x08location\x18\x04 \x01(\t\x12\x13\n\x0bis_charging\x18\x05 \x01(\x08\"\"\n\x14\x44\x65leteScooterRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"]\n\x14\x43reateScooterRequest\x12\r\n\x05label\x18\x01 \x01(\t\x12\x0f\n\x07\x62\x61ttery\x18\x02 \x01(\x05\x12\x10\n\x08location\x18\x03 \x01(\t\x12\x13\n\x0bis_charging\x18\x04 \x01(\x08\"g\n\x12GetScooterResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05label\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61ttery\x18\x03 \x01(\x05\x12\x10\n\x08location\x18\x04 \x01(\t\x12\x13\n\x0bis_charging\x18\x05 \x01(\x08\"?\n\x16GetAllScootersResponse\x12%\n\x08scooters\x18\x01 \x03(\x0b\x32\x13.GetScooterResponse\"j\n\x15\x43reateScooterResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05label\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61ttery\x18\x03 \x01(\x05\x12\x10\n\x08location\x18\x04 \x01(\t\x12\x13\n\x0bis_charging\x18\x05 \x01(\x08\x32\x9a\x02\n\x0eScooterService\x12\x35\n\nGetScooter\x12\x12.GetScooterRequest\x1a\x13.GetScooterResponse\x12\x31\n\x0eGetAllScooters\x12\x06.Empty\x1a\x17.GetAllScootersResponse\x12.\n\rUpdateScooter\x12\x15.UpdateScooterRequest\x1a\x06.Empty\x12.\n\rDeleteScooter\x12\x15.DeleteScooterRequest\x1a\x06.Empty\x12>\n\rCreateScooter\x12\x15.CreateScooterRequest\x1a\x16.CreateScooterResponseb\x06proto3'
+  serialized_pb=b'\n\x0escooters.proto\x1a\x17service_discovery.proto\"\x1f\n\x11GetScooterRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"i\n\x14UpdateScooterRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05label\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61ttery\x18\x03 \x01(\x05\x12\x10\n\x08location\x18\x04 \x01(\t\x12\x13\n\x0bis_charging\x18\x05 \x01(\x08\"\"\n\x14\x44\x65leteScooterRequest\x12\n\n\x02id\x18\x01 \x01(\x03\"]\n\x14\x43reateScooterRequest\x12\r\n\x05label\x18\x01 \x01(\t\x12\x0f\n\x07\x62\x61ttery\x18\x02 \x01(\x05\x12\x10\n\x08location\x18\x03 \x01(\t\x12\x13\n\x0bis_charging\x18\x04 \x01(\x08\"z\n\x12GetScooterResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05label\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61ttery\x18\x03 \x01(\x05\x12\x10\n\x08location\x18\x04 \x01(\t\x12\x13\n\x0bis_charging\x18\x05 \x01(\x08\x12\x11\n\tavailable\x18\x06 \x01(\x08\"7\n\x16SetAvailabilityRequest\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x11\n\tavailable\x18\x02 \x01(\x08\"?\n\x16GetAllScootersResponse\x12%\n\x08scooters\x18\x01 \x03(\x0b\x32\x13.GetScooterResponse\"j\n\x15\x43reateScooterResponse\x12\n\n\x02id\x18\x01 \x01(\x03\x12\r\n\x05label\x18\x02 \x01(\t\x12\x0f\n\x07\x62\x61ttery\x18\x03 \x01(\x05\x12\x10\n\x08location\x18\x04 \x01(\t\x12\x13\n\x0bis_charging\x18\x05 \x01(\x08\x32\xd5\x02\n\x0eScooterService\x12\x35\n\nGetScooter\x12\x12.GetScooterRequest\x1a\x13.GetScooterResponse\x12\x31\n\x0eGetAllScooters\x12\x06.Empty\x1a\x17.GetAllScootersResponse\x12.\n\rUpdateScooter\x12\x15.UpdateScooterRequest\x1a\x06.Empty\x12.\n\rDeleteScooter\x12\x15.DeleteScooterRequest\x1a\x06.Empty\x12>\n\rCreateScooter\x12\x15.CreateScooterRequest\x1a\x16.CreateScooterResponse\x12\x39\n\x16SetScooterAvailability\x12\x17.SetAvailabilityRequest\x1a\x06.Emptyb\x06proto3'
   ,
-  dependencies=[proto_dot_service__discovery__pb2.DESCRIPTOR, ])
+  dependencies=[service__discovery__pb2.DESCRIPTOR,])
 
 
 
@@ -247,6 +247,13 @@ _GETSCOOTERRESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='available', full_name='GetScooterResponse.available', index=5,
+      number=6, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -260,7 +267,46 @@ _GETSCOOTERRESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=314,
-  serialized_end=417,
+  serialized_end=436,
+)
+
+
+_SETAVAILABILITYREQUEST = _descriptor.Descriptor(
+  name='SetAvailabilityRequest',
+  full_name='SetAvailabilityRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='SetAvailabilityRequest.id', index=0,
+      number=1, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='available', full_name='SetAvailabilityRequest.available', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=438,
+  serialized_end=493,
 )
 
 
@@ -291,8 +337,8 @@ _GETALLSCOOTERSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=419,
-  serialized_end=482,
+  serialized_start=495,
+  serialized_end=558,
 )
 
 
@@ -351,8 +397,8 @@ _CREATESCOOTERRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=484,
-  serialized_end=590,
+  serialized_start=560,
+  serialized_end=666,
 )
 
 _GETALLSCOOTERSRESPONSE.fields_by_name['scooters'].message_type = _GETSCOOTERRESPONSE
@@ -361,6 +407,7 @@ DESCRIPTOR.message_types_by_name['UpdateScooterRequest'] = _UPDATESCOOTERREQUEST
 DESCRIPTOR.message_types_by_name['DeleteScooterRequest'] = _DELETESCOOTERREQUEST
 DESCRIPTOR.message_types_by_name['CreateScooterRequest'] = _CREATESCOOTERREQUEST
 DESCRIPTOR.message_types_by_name['GetScooterResponse'] = _GETSCOOTERRESPONSE
+DESCRIPTOR.message_types_by_name['SetAvailabilityRequest'] = _SETAVAILABILITYREQUEST
 DESCRIPTOR.message_types_by_name['GetAllScootersResponse'] = _GETALLSCOOTERSRESPONSE
 DESCRIPTOR.message_types_by_name['CreateScooterResponse'] = _CREATESCOOTERRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -400,6 +447,13 @@ GetScooterResponse = _reflection.GeneratedProtocolMessageType('GetScooterRespons
   })
 _sym_db.RegisterMessage(GetScooterResponse)
 
+SetAvailabilityRequest = _reflection.GeneratedProtocolMessageType('SetAvailabilityRequest', (_message.Message,), {
+  'DESCRIPTOR' : _SETAVAILABILITYREQUEST,
+  '__module__' : 'scooters_pb2'
+  # @@protoc_insertion_point(class_scope:SetAvailabilityRequest)
+  })
+_sym_db.RegisterMessage(SetAvailabilityRequest)
+
 GetAllScootersResponse = _reflection.GeneratedProtocolMessageType('GetAllScootersResponse', (_message.Message,), {
   'DESCRIPTOR' : _GETALLSCOOTERSRESPONSE,
   '__module__' : 'scooters_pb2'
@@ -423,8 +477,8 @@ _SCOOTERSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=593,
-  serialized_end=875,
+  serialized_start=669,
+  serialized_end=1010,
   methods=[
   _descriptor.MethodDescriptor(
     name='GetScooter',
@@ -441,7 +495,7 @@ _SCOOTERSERVICE = _descriptor.ServiceDescriptor(
     full_name='ScooterService.GetAllScooters',
     index=1,
     containing_service=None,
-    input_type=proto_dot_service__discovery__pb2._EMPTY,
+    input_type=service__discovery__pb2._EMPTY,
     output_type=_GETALLSCOOTERSRESPONSE,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
@@ -452,7 +506,7 @@ _SCOOTERSERVICE = _descriptor.ServiceDescriptor(
     index=2,
     containing_service=None,
     input_type=_UPDATESCOOTERREQUEST,
-    output_type=proto_dot_service__discovery__pb2._EMPTY,
+    output_type=service__discovery__pb2._EMPTY,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),
@@ -462,7 +516,7 @@ _SCOOTERSERVICE = _descriptor.ServiceDescriptor(
     index=3,
     containing_service=None,
     input_type=_DELETESCOOTERREQUEST,
-    output_type=proto_dot_service__discovery__pb2._EMPTY,
+    output_type=service__discovery__pb2._EMPTY,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),
@@ -473,6 +527,16 @@ _SCOOTERSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CREATESCOOTERREQUEST,
     output_type=_CREATESCOOTERRESPONSE,
+    serialized_options=None,
+    create_key=_descriptor._internal_create_key,
+  ),
+  _descriptor.MethodDescriptor(
+    name='SetScooterAvailability',
+    full_name='ScooterService.SetScooterAvailability',
+    index=5,
+    containing_service=None,
+    input_type=_SETAVAILABILITYREQUEST,
+    output_type=service__discovery__pb2._EMPTY,
     serialized_options=None,
     create_key=_descriptor._internal_create_key,
   ),

@@ -36,7 +36,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./ScootersService/dbinit/init.sql:/docker-entrypoint-initdb.d/0_init.sql
-      - $HOME/database:/var/lib/mysql
+      - $HOME/database/2:/var/lib/mysql
     ports:
       - 3306:3306
     expose:

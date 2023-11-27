@@ -3,7 +3,14 @@ import * as protoLoader from "@grpc/proto-loader";
 import * as grpc from "@grpc/grpc-js";
 import log from "../config/logger.js";
 import {registerWithServiceDiscovery} from "./RegisterToServiceDiscovery.js";
-import {createScooter, deleteScooter, getAllScooters, getScooter, updateScooter} from "../controller/scooters.controller.js";
+import {
+    createScooter,
+    deleteScooter,
+    getAllScooters,
+    getScooter,
+    setAvailability,
+    updateScooter
+} from "../controller/scooters.controller.js";
 
 const GRPC_PORT = process.env.SERVER_PORT || 3000;
 const GRPC_SERVER_HOST = process.env.SERVICE_NAME || ip.address();
@@ -42,6 +49,7 @@ protoServer.addService(scooterServiceProto.ScooterService.service,{
     updateScooter: updateScooter,
     deleteScooter: deleteScooter,
     createScooter: createScooter,
+    SetScooterAvailability: setAvailability,
 });
 
 protoServer.addService(serviceRegistryProto.ServiceRegistry.service, {
