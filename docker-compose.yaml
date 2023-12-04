@@ -137,6 +137,30 @@ services:
     networks:
       - scooter-rent
 
+  coordinator:
+    container_name: coordinator
+    build: ./CoordinatorService
+    image: coordinator:1.0
+    restart: always
+    ports:
+      - 7000:7000
+    expose:
+      - 7000
+    volumes:
+      - ./CoordinatorService:/user/src
+    environment:
+      SERVICE_NAME: coordinator
+      SERVER_PORT: 7000
+      SERVICE_DISCOVERY_PORT: 2000
+      SERVICE_DISCOVERY_HOST: service-discovery
+      TIMEOUT: 3000
+    depends_on:
+      - service-discovery
+      - scooters-management
+      - bookings-management
+    networks:
+      - scooter-rent
+
   redis:
     container_name: redis-container
     image: redis:latest
