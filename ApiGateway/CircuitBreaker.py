@@ -5,6 +5,14 @@ import grpc
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s | [%(levelname)s]: %(message)s")
 
 
+class CircuitBreakerException(Exception):
+    pass
+
+
+class RerouteException(Exception):
+    pass
+
+
 class CircuitBreaker:
     def __init__(self, failure_threshold=3, recovery_timeout=30):
         self.failure_threshold = failure_threshold
@@ -17,7 +25,7 @@ class CircuitBreaker:
     def call(self, func, *args, **kwargs):
         if self.is_open():
             logging.error("Circuit breaker is OPEN")
-            raise grpc.RpcError("Circuit breaker is OPEN")
+            raise CircuitBreakerException("Circuit breaker is OPEN")
 
         try:
             result = func(*args, **kwargs)
@@ -26,6 +34,7 @@ class CircuitBreaker:
         except grpc.RpcError as e:
             if e.code() == grpc.StatusCode.INTERNAL:
                 self.on_failure()
+                raise RerouteException('Service failed: reroute!')
             raise e
 
     def is_open(self):

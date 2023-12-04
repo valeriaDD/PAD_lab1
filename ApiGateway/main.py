@@ -6,7 +6,7 @@ import grpc
 from flask import Flask, request, abort
 
 from CacheHashRing import CacheHashRing
-from CircuitBreaker import CircuitBreaker
+from CircuitBreaker import CircuitBreaker, RerouteException, CircuitBreakerException
 from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc, \
     bookings_pb2
 
@@ -28,6 +28,14 @@ nodes = {
 
 redis_hash_ring = CacheHashRing(nodes)
 
+grpc_to_http_status = {
+        grpc.StatusCode.OK: 200,
+        grpc.StatusCode.UNKNOWN: 500,
+        grpc.StatusCode.NOT_FOUND: 404,
+        grpc.StatusCode.INTERNAL: 500,
+        grpc.StatusCode.INVALID_ARGUMENT: 422,
+    }
+
 
 def get_scooter_service_channel(service_name):
     try:
@@ -48,19 +56,49 @@ def hello_world():
 
 @app.route('/book/scooters/<int:scooter_id>', methods=['POST'])
 def book_scooter(scooter_id):
-    with semaphore:
-        data = request.json
-        request_data = bookings_pb2.BookScooterRequest(
-            scooter_id=str(scooter_id),
-            start=data['start'],
-            user_email=data['user_email'],
-            title=data['title']
-        )
+    while True:
+        with semaphore:
+            data = request.json
+            request_data = bookings_pb2.BookScooterRequest(
+                scooter_id=str(scooter_id),
+                start=data['start'],
+                user_email=data['user_email'],
+                title=data['title']
+            )
+            try:
+                with get_scooter_service_channel("bookings") as channel:
+                    stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+                    response = booking_circuit_breaker.call(lambda: stub.BookScooter(request_data, timeout=5.0))
+
+                    redis_hash_ring.delete('all_bookings')
+                    return {
+                        'id': response.id,
+                        'title': response.title,
+                        'start': response.start,
+                        'user_email': response.user_email,
+                        'scooter_id': response.scooter_id,
+                        'end': response.end
+                    }
+
+            except RerouteException as e:
+                continue
+            except grpc.RpcError as e:
+                abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
+            except CircuitBreakerException as e:
+                abort(500, description=str(e))
+
+
+@app.route('/book/<int:booking_id>/end-ride', methods=['PATCH'])
+def end_ride(booking_id):
+    while True:
+        request_data = bookings_pb2.EndRideRequest(id=booking_id)
         try:
             with get_scooter_service_channel("bookings") as channel:
                 stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-                response = booking_circuit_breaker.call(lambda: stub.BookScooter(request_data, timeout=5.0))
+                response = booking_circuit_breaker.call(lambda: stub.EndRide(request_data, timeout=5.0))
 
+                cache_key = f'booking_{booking_id}'
+                redis_hash_ring.delete(cache_key)
                 redis_hash_ring.delete('all_bookings')
                 return {
                     'id': response.id,
@@ -70,193 +108,206 @@ def book_scooter(scooter_id):
                     'scooter_id': response.scooter_id,
                     'end': response.end
                 }
-
+        except RerouteException as e:
+            continue
         except grpc.RpcError as e:
-            abort(500, description=e.details())
+            abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
 
-
-@app.route('/book/<int:booking_id>/end-ride', methods=['PATCH'])
-def end_ride(booking_id):
-    request_data = bookings_pb2.EndRideRequest(id=booking_id)
-    try:
-        with get_scooter_service_channel("bookings") as channel:
-            stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-            response = booking_circuit_breaker.call(lambda: stub.EndRide(request_data, timeout=5.0))
-
-            cache_key = f'booking_{booking_id}'
-            redis_hash_ring.delete(cache_key)
-            redis_hash_ring.delete('all_bookings')
-            return {
-                'id': response.id,
-                'title': response.title,
-                'start': response.start,
-                'user_email': response.user_email,
-                'scooter_id': response.scooter_id,
-                'end': response.end
-            }
-    except grpc.RpcError as e:
-        abort(500, description=e.details())
+        except CircuitBreakerException as e:
+            abort(500, description=str(e))
 
 
 @app.route('/book/<int:booking_id>', methods=['GET'])
 def get_booking(booking_id):
-    request_data = bookings_pb2.GetBookingRequest(id=booking_id)
-    try:
-        with get_scooter_service_channel("bookings") as channel:
-            stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-            response = booking_circuit_breaker.call(lambda: stub.GetBooking(request_data, timeout=5.0))
+    while True:
+        request_data = bookings_pb2.GetBookingRequest(id=booking_id)
+        try:
+            with get_scooter_service_channel("bookings") as channel:
+                stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+                response = booking_circuit_breaker.call(lambda: stub.GetBooking(request_data, timeout=5.0))
 
-            booking = {
-                'id': response.id,
-                'title': response.title,
-                'start': response.start,
-                'user_email': response.user_email,
-                'scooter_id': response.scooter_id,
-                'end': response.end
-            }
-            redis_hash_ring.set(f'booking_{booking_id}', booking)
-            return booking
-    except grpc.RpcError as e:
-        if e.code() == grpc.StatusCode.NOT_FOUND:
-            abort(404, description="Booking not found")
-        abort(500, description=e.details())
+                booking = {
+                    'id': response.id,
+                    'title': response.title,
+                    'start': response.start,
+                    'user_email': response.user_email,
+                    'scooter_id': response.scooter_id,
+                    'end': response.end
+                }
+                redis_hash_ring.set(f'booking_{booking_id}', booking)
+                return booking
+        except RerouteException as e:
+            continue
+        except grpc.RpcError as e:
+            abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
+
+        except CircuitBreakerException as e:
+            abort(500, description=str(e))
 
 
 @app.route('/book', methods=['GET'])
 def get_all_bookings():
-    try:
-        with get_scooter_service_channel("bookings") as channel:
-            stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-            response = booking_circuit_breaker.call(
-                lambda: stub.GetAllBookings(service_discovery_pb2.Empty(), timeout=5.0))
+    while True:
+        try:
+            with get_scooter_service_channel("bookings") as channel:
+                stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+                response = booking_circuit_breaker.call(
+                    lambda: stub.GetAllBookings(service_discovery_pb2.Empty(), timeout=5.0))
 
-            bookings = [
-                {
-                    'id': booking.id,
-                    'title': booking.title,
-                    'start': booking.start,
-                    'user_email': booking.user_email,
-                    'scooter_id': booking.scooter_id,
-                    'end': booking.end
-                } for booking in response.bookings
-            ]
+                bookings = [
+                    {
+                        'id': booking.id,
+                        'title': booking.title,
+                        'start': booking.start,
+                        'user_email': booking.user_email,
+                        'scooter_id': booking.scooter_id,
+                        'end': booking.end
+                    } for booking in response.bookings
+                ]
 
-            redis_hash_ring.set('all_bookings', bookings)
+                redis_hash_ring.set('all_bookings', bookings)
 
-            return bookings
+                return bookings
+        except RerouteException as e:
+            continue
+        except grpc.RpcError as e:
+            abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
 
-    except grpc.RpcError as e:
-        abort(500, description=e.details())
+        except CircuitBreakerException as e:
+            abort(500, description=str(e))
 
 
 @app.route('/scooters/<int:scooter_id>', methods=['GET'])
 def get_scooter(scooter_id):
-    try:
-        with get_scooter_service_channel("scooters") as channel:
-            stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            request_data = scooters_pb2.GetScooterRequest(id=scooter_id)
-            response = scooters_circuit_breaker.call(lambda: stub.GetScooter(request_data, timeout=5.0))
+    while True:
+        try:
+            with get_scooter_service_channel("scooters") as channel:
+                stub = scooters_pb2_grpc.ScooterServiceStub(channel)
+                request_data = scooters_pb2.GetScooterRequest(id=scooter_id)
+                response = scooters_circuit_breaker.call(lambda: stub.GetScooter(request_data, timeout=5.0))
 
-            scooter = {
-                "id": response.id,
-                "label": response.label,
-                "battery_life": response.battery,
-                "location": response.location,
-                "is_charging": response.is_charging,
-                "available": response.available
-            }
-            redis_hash_ring.set(f'scooter_{scooter_id}', scooter)
+                scooter = {
+                    "id": response.id,
+                    "label": response.label,
+                    "battery_life": response.battery,
+                    "location": response.location,
+                    "is_charging": response.is_charging,
+                    "available": response.available
+                }
+                redis_hash_ring.set(f'scooter_{scooter_id}', scooter)
 
-            return scooter
+                return scooter
 
-    except grpc.RpcError as e:
-        if e.code() == grpc.StatusCode.NOT_FOUND:
-            abort(404, description="Scooter not found")
-        abort(500, description=e.details())
-
+        except RerouteException as e:
+            logging.info(f"Reroute request")
+            continue
+        except grpc.RpcError as e:
+            abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
+        except CircuitBreakerException as e:
+            abort(500, description=str(e))
 
 @app.route('/scooters', methods=['GET'])
 def get_all_scooters():
-    try:
-        with get_scooter_service_channel("scooters") as channel:
-            stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            response = scooters_circuit_breaker.call(
-                lambda: stub.GetAllScooters(service_discovery_pb2.Empty(), timeout=5.0))
+    while True:
+        try:
+            with get_scooter_service_channel("scooters") as channel:
+                stub = scooters_pb2_grpc.ScooterServiceStub(channel)
+                response = scooters_circuit_breaker.call(
+                    lambda: stub.GetAllScooters(service_discovery_pb2.Empty(), timeout=5.0))
 
-            scooters = [scooter_to_dict(scooter) for scooter in response.scooters]
-            redis_hash_ring.set('all_scooters', scooters)
-            return scooters
-    except grpc.RpcError as e:
-        abort(500, description=e.details())
+                scooters = [scooter_to_dict(scooter) for scooter in response.scooters]
+                redis_hash_ring.set('all_scooters', scooters)
+
+                return scooters
+        except RerouteException as e:
+            logging.info(f"Reroute request from {channel}")
+            continue
+        except grpc.RpcError as e:
+            abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
+
+        except CircuitBreakerException as e:
+            abort(500, description=str(e))
 
 
 @app.route('/scooters/<int:scooter_id>', methods=['PATCH'])
 def update_scooter(scooter_id):
-    data = request.json
-    request_data = scooters_pb2.UpdateScooterRequest(
-        id=scooter_id,
-        label=data['label'],
-        battery=data['battery_life'],
-        location=data['location'],
-        is_charging=data['is_charging']
-    )
-    try:
-        with get_scooter_service_channel("scooters") as channel:
-            stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            scooters_circuit_breaker.call(lambda: stub.UpdateScooter(request_data, timeout=5.0))
+    while True:
+        data = request.json
+        request_data = scooters_pb2.UpdateScooterRequest(
+            id=scooter_id,
+            label=data['label'],
+            battery=data['battery_life'],
+            location=data['location'],
+            is_charging=data['is_charging']
+        )
+        try:
+            with get_scooter_service_channel("scooters") as channel:
+                stub = scooters_pb2_grpc.ScooterServiceStub(channel)
+                scooters_circuit_breaker.call(lambda: stub.UpdateScooter(request_data, timeout=5.0))
 
-            cache_key = f'scooter_{scooter_id}'
-            redis_hash_ring.delete(cache_key)
-            redis_hash_ring.delete('all_scooters')
-            return '', 204
-    except grpc.RpcError as e:
-        if e.code() == grpc.StatusCode.NOT_FOUND:
-            abort(404, description="Scooter not found")
-        if e.code() == grpc.StatusCode.INVALID_ARGUMENT:
-            abort(422, description=e.details())
+                cache_key = f'scooter_{scooter_id}'
+                redis_hash_ring.delete(cache_key)
+                redis_hash_ring.delete('all_scooters')
+                return '', 204
 
-        abort(e.code(), description=e.details())
+        except RerouteException as e:
+            continue
+        except grpc.RpcError as e:
+            abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
 
+        except CircuitBreakerException as e:
+            abort(500, description=str(e))
 
 @app.route('/scooters/<int:scooter_id>', methods=['DELETE'])
 def delete_scooter(scooter_id):
-    try:
-        with get_scooter_service_channel("scooters") as channel:
-            stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            scooters_circuit_breaker.call(
-                lambda: stub.DeleteScooter(scooters_pb2.DeleteScooterRequest(id=scooter_id), timeout=5.0))
+    while True:
+        try:
+            with get_scooter_service_channel("scooters") as channel:
+                stub = scooters_pb2_grpc.ScooterServiceStub(channel)
+                scooters_circuit_breaker.call(
+                    lambda: stub.DeleteScooter(scooters_pb2.DeleteScooterRequest(id=scooter_id), timeout=5.0))
 
-            cache_key = f'scooter_{scooter_id}'
-            redis_hash_ring.delete(cache_key)
-            redis_hash_ring.delete('all_scooters')
-        return '', 204
-    except grpc.RpcError as e:
-        if e.code() == grpc.StatusCode.NOT_FOUND:
-            abort(404, description="Scooter not found")
-        abort(e.code(), description=e.details())
+                cache_key = f'scooter_{scooter_id}'
+                redis_hash_ring.delete(cache_key)
+                redis_hash_ring.delete('all_scooters')
+            return '', 204
+        except RerouteException as e:
+            continue
+        except grpc.RpcError as e:
+            abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
+
+        except CircuitBreakerException as e:
+            abort(500, description=str(e))
 
 
 @app.route('/scooters', methods=['POST'])
 def create_scooter():
-    data = request.json
+    while True:
+        data = request.json
 
-    request_data = scooters_pb2.CreateScooterRequest(
-        label=data['label'],
-        battery=data['battery_life'],
-        location=data['location'],
-        is_charging=data['is_charging']
-    )
+        request_data = scooters_pb2.CreateScooterRequest(
+            label=data['label'],
+            battery=data['battery_life'],
+            location=data['location'],
+            is_charging=data['is_charging']
+        )
 
-    try:
-        with get_scooter_service_channel("scooters") as channel:
-            stub = scooters_pb2_grpc.ScooterServiceStub(channel)
-            response = scooters_circuit_breaker.call(lambda: stub.CreateScooter(request_data, timeout=5.0))
+        try:
+            with get_scooter_service_channel("scooters") as channel:
+                stub = scooters_pb2_grpc.ScooterServiceStub(channel)
+                response = scooters_circuit_breaker.call(lambda: stub.CreateScooter(request_data, timeout=5.0))
+            redis_hash_ring.delete('all_scooters')
 
-    except grpc.RpcError as e:
-        abort(500, description=e)
+            return scooter_to_dict(response), 201
+        except RerouteException as e:
+            continue
+        except grpc.RpcError as e:
+            abort(grpc_to_http_status.get(e.code(), 500), description=e.details())
 
-    redis_hash_ring.delete('all_scooters')
-    return scooter_to_dict(response), 201
+        except CircuitBreakerException as e:
+            abort(500, description=str(e))
+
+
 
 
 def scooter_to_dict(object):

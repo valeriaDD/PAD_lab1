@@ -3,6 +3,10 @@ import * as grpc from "@grpc/grpc-js";
 import log from "../config/logger.js";
 
 export function getScooter(call, callback) {
+    callback({
+                code: grpc.status.INTERNAL,
+                details: "Error while fetching scooter from database"
+            });
     const scooterId = call.request.id;
     log.info(`Request to get id ${scooterId}`);
     queries.getScooter(scooterId, (err, result) => {
