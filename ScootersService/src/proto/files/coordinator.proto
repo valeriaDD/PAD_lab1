@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+service Coordinator {
+  rpc BookScooter(BookScooterRequest) returns (BookScooterResponse);
+  rpc EndRide(EndRideRequest) returns (BookScooterResponse);
+  rpc SetScooterAvailability(EndRideRequest) returns (Empty);
+}
+
+message BookScooterRequest {
+  string scooter_id = 1;
+  string start = 2;
+  string user_email = 3;
+  string title = 4;
+}
+
+message BookScooterResponse {
+  int64 id = 1;
+  string start = 2;
+  string user_email = 3;
+  string scooter_id = 4;
+  string end = 5;
+  string title = 6;
+}
+
+message EndRideRequest {
+  int64 id = 1;
+}
+
+message SetAvailabilityRequest {
+    int64 id = 1;
+    bool available = 2;
+}
+
+
+message Empty {}

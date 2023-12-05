@@ -1,0 +1,7 @@
+syntax = "proto3";
+import "bookings.proto";
+
+service Coordinator {
+  rpc BookScooter(BookScooterRequest) returns (BookScooterResponse);
+  rpc EndRide(EndRideRequest) returns (BookScooterResponse);
+}

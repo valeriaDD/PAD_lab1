@@ -7,7 +7,7 @@ from flask import Flask, request, abort
 
 from CacheHashRing import CacheHashRing
 from CircuitBreaker import CircuitBreaker, RerouteException, CircuitBreakerException
-from proto import service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc, \
+from proto import coordinator_pb2_grpc, coordinator_pb2, service_discovery_pb2_grpc, service_discovery_pb2, scooters_pb2, scooters_pb2_grpc, bookings_pb2_grpc, \
     bookings_pb2
 
 logging.basicConfig(level=logging.INFO, format="[%(asctime)s] %(name)s | [%(levelname)s]: %(message)s")
@@ -20,6 +20,7 @@ app = Flask(__name__)
 semaphore = threading.Semaphore(2)
 booking_circuit_breaker = CircuitBreaker()
 scooters_circuit_breaker = CircuitBreaker()
+coordinator_circuit_breaker = CircuitBreaker()
 
 nodes = {
     'redis_node_1': {'host': 'redis', 'port': 6379},
@@ -93,9 +94,9 @@ def end_ride(booking_id):
     while True:
         request_data = bookings_pb2.EndRideRequest(id=booking_id)
         try:
-            with get_scooter_service_channel("bookings") as channel:
-                stub = bookings_pb2_grpc.BookingsServiceStub(channel)
-                response = booking_circuit_breaker.call(lambda: stub.EndRide(request_data, timeout=5.0))
+            with get_scooter_service_channel("coordinator") as channel:
+                stub = coordinator_pb2_grpc.CoordinatorStub(channel)
+                response = coordinator_circuit_breaker.call(lambda: stub.EndRide(request_data, timeout=5.0))
 
                 cache_key = f'booking_{booking_id}'
                 redis_hash_ring.delete(cache_key)

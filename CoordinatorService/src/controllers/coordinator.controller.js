@@ -1,8 +1,8 @@
 import log from "../config/logger.js";
 
 export function book(call, callback) {
-    log.info(call)
-    callback({
+    log.info("Call for book")
+    callback(null, {
         id: 1,
         start: '25 dec 18:00',
         user_email: 'test@email.com',
@@ -13,8 +13,8 @@ export function book(call, callback) {
 }
 
 export function endRide(call, callback) {
-    log.info(call)
-    callback({
+    log.info("Call for end ride")
+    callback(null, {
         id: 1,
         start: '25 dec 18:00',
         user_email: 'test@email.com',
