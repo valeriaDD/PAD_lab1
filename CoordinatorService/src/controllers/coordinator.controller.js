@@ -4,56 +4,61 @@ import * as grpc from "@grpc/grpc-js";
 import ScooterClient from "../proto/clients/ScooterClient.js";
 import BookingsClient from "../proto/clients/BookingsClient.js";
 
+const DEADLINE_SECONDS = 5;
+
+function createDeadline() {
+    const deadline = new Date();
+    deadline.setSeconds(deadline.getSeconds() + DEADLINE_SECONDS);
+    return deadline;
+}
+
+function discoverService(serviceName, callback) {
+    ServiceDiscoveryClient.DiscoverService({ service_name: serviceName }, { deadline: createDeadline() }, callback);
+}
+
+function handleServiceFailError(error, callback) {
+    if (error) {
+        console.error(`Error during service discovery: ${error}`);
+        callback({ code: grpc.status.INTERNAL, details: "Error during service discovery" });
+        return true;
+    }
+    return false;
+}
+
+function setScooterAvailability(scooterClient, scooterId, available, callback) {
+    scooterClient.SetScooterAvailability({ id: scooterId, available }, callback);
+}
+
 export function book(call, callback) {
     log.info("Call for booking");
     const scooterId = call.request.scooter_id;
-    const deadline = new Date();
-    deadline.setSeconds(deadline.getSeconds() + 5);
 
-    ServiceDiscoveryClient.DiscoverService({service_name: "scooters"}, {deadline: deadline}, (error, serviceInfo) => {
-        console.log(`Call to discover scooter service`);
-        if (error) {
-            callback({code: grpc.status.INTERNAL, details: "Error during service discovery"});
-            return;
-        }
+    discoverService("scooters", (error, serviceInfo) => {
+        if (handleServiceFailError(error, callback)) return;
 
         const scooterClient = ScooterClient(serviceInfo.host, serviceInfo.port);
-        scooterClient.SetScooterAvailability({id: scooterId, available: false}, (error, scooterInfo) => {
-            console.log(`Call to mark scooter unavailable`);
+        setScooterAvailability(scooterClient, scooterId, false, (error) => {
             if (error) {
-                callback({code: error.code, details: error.details});
+                log.error(`Error setting scooter availability: ${error}`);
+                callback({ code: error.code, details: error.details });
                 return;
             }
 
-            ServiceDiscoveryClient.DiscoverService({service_name: "bookings"}, {deadline: deadline}, (error, serviceInfo) => {
-                if (error) {
-                    log.info(`Error during service discovery`);
-                    scooterClient.SetScooterAvailability({id: scooterId, available: true}, (error, scooterInfo) => {
-                        console.log(`Rollback scooter service`);
-                        if (error) {
-                            callback({code: error.code, details: error.details});
-                        }
-                    });
-
-                    callback({code: error.code, details: error.details});
+            discoverService("bookings", (error, serviceInfo) => {
+                if (handleServiceFailError(error, callback)) {
+                    setScooterAvailability(scooterClient, scooterId, true, handleServiceFailError);
                     return;
                 }
 
                 const bookingsClient = BookingsClient(serviceInfo.host, serviceInfo.port);
                 bookingsClient.BookScooter(call.request, (error, response) => {
                     if (error) {
-                        log.info(`Booking error!`);
-                        scooterClient.SetScooterAvailability({id: scooterId, available: true}, (error, scooterInfo) => {
-                            console.log(`Rollback scooter service`);
-                            if (error) {
-                                callback({code: error.code, details: error.details});
-                            }
-                        });
-                        callback({code: error.code, details: error.details});
+                        log.error(`Booking error: ${error}`);
+                        setScooterAvailability(scooterClient, scooterId, true, handleServiceFailError);
+                        callback({ code: error.code, details: error.details });
                         return;
                     }
-
-                    callback(null, response)
+                    callback(null, response);
                 });
             });
         });
@@ -63,45 +68,28 @@ export function book(call, callback) {
 export function endRide(call, callback) {
     log.info("Call for end ride");
     const bookingId = call.request.id;
-    const deadline = new Date();
-    deadline.setSeconds(deadline.getSeconds() + 5);
 
-    ServiceDiscoveryClient.DiscoverService({service_name: "bookings"}, {deadline: deadline}, (error, serviceInfo) => {
-        console.log(`Call to discover bookings service`);
-        if (error) {
-            console.error(`Error for bookings service discovery`);
-            callback({code: grpc.status.INTERNAL, details: "Error during service discovery"});
-            return;
-        }
+    discoverService("bookings", (error, serviceInfo) => {
+        if (handleServiceFailError(error, callback)) return;
 
         const bookingClient = BookingsClient(serviceInfo.host, serviceInfo.port);
-        bookingClient.EndRide({id: bookingId}, (error, response) => {
-            console.log(`Call to end ride ${bookingId}`);
+        bookingClient.EndRide({ id: bookingId }, (error, response) => {
             if (error) {
-                console.log(`Error for call to end ride ${bookingId}`);
-                callback({code: error.code, details: error.details});
+                log.error(`Error ending ride: ${error}`);
+                callback({ code: error.code, details: error.details });
                 return;
             }
 
-            const scooterId = response.scooter_id;
-
-            ServiceDiscoveryClient.DiscoverService({service_name: "scooters"}, {deadline: deadline}, (error, serviceInfo) => {
-                console.log(`Call to discover scooters service`);
-                if (error) {
-                    console.error(`Error for scooters service discovery`);
-                    callback({code: grpc.status.INTERNAL, details: "Error during service discovery"});
-                    return;
-                }
+            discoverService("scooters", (error, serviceInfo) => {
+                if (handleServiceFailError(error, callback)) return;
 
                 const scooterClient = ScooterClient(serviceInfo.host, serviceInfo.port);
-                scooterClient.SetScooterAvailability({id: scooterId, available: true}, (error, response) => {
-                    console.log(`Call to mark scooter available ${scooterId}`);
+                setScooterAvailability(scooterClient, response.scooter_id, true, (error) => {
                     if (error) {
-                        console.log(`Unable to mark availability of scooter ${scooterId}`)
+                        log.error(`Error setting scooter availability: ${error}`);
                     }
                 });
-
-                callback(null, response)
+                callback(null, response);
             });
         });
     });
