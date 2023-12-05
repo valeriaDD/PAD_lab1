@@ -1,5 +1,5 @@
 
-import ServiceDiscoveryClient from "./clients/ServiceDiscoveryClient.js";
+import ServiceDiscoveryClient from "./ServiceDiscoveryClient.js";
 import log from "../config/logger.js";
 
 // TODO: Add timeout to env value
