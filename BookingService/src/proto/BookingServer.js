@@ -2,7 +2,7 @@ import ip from "ip";
 import * as protoLoader from "@grpc/proto-loader";
 import * as grpc from "@grpc/grpc-js";
 import log from "../config/logger.js";
-import {registerWithServiceDiscovery} from "./services/RegisterToServiceDiscovery.js";
+import {registerWithServiceDiscovery} from "./RegisterToServiceDiscovery.js";
 import {bookScooter, endRide, getAllBookings, getBooking} from "../controller/booking.controller.js";
 
 const GRPC_PORT = process.env.SERVER_PORT || 3000;
