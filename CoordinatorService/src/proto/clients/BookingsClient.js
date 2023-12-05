@@ -12,9 +12,9 @@ function createBookingClient(serverHost, serverPort) {
             oneofs: true,
         }
     );
-    const ScootersService = grpc.loadPackageDefinition(packageDefinition).BookingsService;
+    const BookingService = grpc.loadPackageDefinition(packageDefinition).BookingsService;
 
-    return  new ScootersService(
+    return  new BookingService(
         `${serverHost}:${serverPort}`,
         grpc.credentials.createInsecure()
     );

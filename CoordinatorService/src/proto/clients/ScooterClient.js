@@ -21,4 +21,3 @@ function createScooterClient(serverHost, serverPort) {
 }
 
 export default createScooterClient;
-

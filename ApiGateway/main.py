@@ -67,8 +67,8 @@ def book_scooter(scooter_id):
                 title=data['title']
             )
             try:
-                with get_scooter_service_channel("bookings") as channel:
-                    stub = bookings_pb2_grpc.BookingsServiceStub(channel)
+                with get_scooter_service_channel("coordinator") as channel:
+                    stub = coordinator_pb2_grpc.CoordinatorStub(channel)
                     response = booking_circuit_breaker.call(lambda: stub.BookScooter(request_data, timeout=5.0))
 
                     redis_hash_ring.delete('all_bookings')
